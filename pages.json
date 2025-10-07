@@ -1,0 +1,69 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/tabBar/tabcomPage/tabcomPage",
+			"style": {
+				"navigationBarTitleText": "Smart_UIwjx069"
+			}
+		}, {
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "Smart_UIwjx069"
+			}
+		},
+		{
+			"path": "pages/tabBar/api/api",
+			"style": {
+				"navigationBarTitleText": "Smart_UIwjx069"
+			}
+		},
+		{
+			"path": "pages/tabBar/demos/demos",
+			"style": {
+				"navigationBarTitleText": "Smart_UIwjx069"
+			}
+		},
+		{
+			"path": "pages/tabBar/grammar/grammar",
+			"style": {
+				"navigationBarTitleText": "Smart_UIwjx069"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "Smart_UIwjx069",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"backgroundColor": "#dcdcdc",
+		"color": "#333",
+		"list": [{
+				"text": "组件",
+				"pagePath": "pages/tabBar/tabcomPage/tabcomPage",
+				"iconPath": "/static/tabcomPage.png",
+				"selectedIconPath": "/static/tabcomPage (2).png"
+			},
+			{
+				"text": "API",
+				"pagePath": "pages/tabBar/api/api",
+				"iconPath": "/static/API.png",
+				"selectedIconPath": "/static/API (1).png"
+			},
+			{
+				"text": "DEMOS",
+				"pagePath": "pages/tabBar/demos/demos",
+				"iconPath": "/static/demos (2).png",
+				"selectedIconPath": "/static/demos.png"
+			},
+			{
+				"text": "GRAMMAR",
+				"pagePath": "pages/tabBar/grammar/grammar",
+				"iconPath": "/static/grammar (2).png",
+				"selectedIconPath": "/static/grammar.png"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}
