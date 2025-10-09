@@ -28,6 +28,29 @@
 			"style": {
 				"navigationBarTitleText": "语法测试"
 			}
+		},
+		{
+			"path": "pages/components/view/view",
+			"style": {
+				"navigationBarTitleText": "uni-app 组件演示",
+				"navigationBarTextStyle": "white",
+				"navigationBarBackgroundColor": "#007AFF",
+				"enablePullDownRefresh": false
+			}
+		},
+		// 新增：scroll-view 页面配置（直接放在 pages 数组中，不要嵌套）
+		{
+			"path": "pages/components/scroll-view/scroll-view",
+			"style": {
+				"navigationBarTitleText": "scroll-view 演示"
+			}
+		},
+		// 新增：swiper 页面配置（直接放在 pages 数组中，不要嵌套）
+		{
+			"path": "pages/components/swiper/swiper",
+			"style": {
+				"navigationBarTitleText": "swiper 演示"
+			}
 		}
 	],
 	"globalStyle": {
