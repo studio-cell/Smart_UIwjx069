@@ -110,3 +110,10 @@
 	line-height: 300rpx;
 	text-align: center;
 }
+
+.logo {
+	background-image: url('/static/logo.png');
+	width: 10px;
+	height: 10px;
+	background-size: contain;
+}
