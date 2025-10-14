@@ -38,14 +38,12 @@
 				"enablePullDownRefresh": false
 			}
 		},
-		// 新增：scroll-view 页面配置（直接放在 pages 数组中，不要嵌套）
 		{
 			"path": "pages/components/scroll-view/scroll-view",
 			"style": {
 				"navigationBarTitleText": "scroll-view 演示"
 			}
 		},
-		// 新增：swiper 页面配置（直接放在 pages 数组中，不要嵌套）
 		{
 			"path": "pages/components/swiper/swiper",
 			"style": {
@@ -53,17 +51,33 @@
 			}
 		},
 		{
-			"path" : "pages/login/login",
-			"style" : 
-			{
-				"navigationBarTitleText" : "登入"
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登入"
 			}
 		},
 		{
-			"path" : "pages/register/register",
-			"style" : 
-			{
-				"navigationBarTitleText" : "注册"
+			"path": "pages/register/register",
+			"style": {
+				"navigationBarTitleText": "注册"
+			}
+		},
+		{
+			"path": "pages/components/text/text",
+			"style": {
+				"navigationBarTitleText": "text 组件演示"
+			}
+		},
+		{
+			"path": "pages/components/rich-text/rich-text",
+			"style": {
+				"navigationBarTitleText": "rich-text 组件演示"
+			}
+		},
+		{
+			"path": "pages/components/progress/progress",
+			"style": {
+				"navigationBarTitleText": "progress 组件演示"
 			}
 		}
 	],
