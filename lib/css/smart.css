@@ -1,18 +1,22 @@
+/* 1. 基础容器样式 */
 .smart-padding-wrap {
 	padding: 0 30rpx;
 }
 
-
+/* 2. Flex 布局基础类 */
 .smart-flex {
 	display: flex;
 }
 
-/* 横向排列 */
 .smart-row {
 	flex-direction: row;
 }
 
-/* flex 子项基础（横向布局用） */
+.smart-column {
+	flex-direction: column;
+}
+
+/* 3. Flex 子项样式 */
 .flex-item {
 	width: 33.3%;
 	height: 200rpx;
@@ -20,7 +24,14 @@
 	text-align: center;
 }
 
-/* 背景色样式（多个） */
+.flex-item-100 {
+	width: 100%;
+	height: 200rpx;
+	line-height: 200rpx;
+	text-align: center;
+}
+
+/* 4. 背景色样式 */
 .smart-bg-red {
 	background: #F76260;
 	color: #FFFFFF;
@@ -36,107 +47,96 @@
 	color: #FFFFFF;
 }
 
-.scroll-view-item {
-	width: 100%;
-	height: 300rpx;
-	line-height: 300rpx;
-}
-
-.scroll-x {
-	white-space: nowrap;
-	/* 强制在同一行内显示所有文本 */
-	width: 100%;
-}
-
+/* 5. Scroll-view 样式 */
 .scroll-y {
 	height: 300rpx;
 }
 
-.scroll-view-item-h {
-	display: inline-block;
-	height: 300rpx;
+.scroll-x {
+	white-space: nowrap;
 	width: 100%;
+}
+
+.scroll-view-item {
+	width: 100%;
+	height: 300rpx;
 	line-height: 300rpx;
 	text-align: center;
 }
 
-.smart-column {
-	flex-direction: column;
-}
-
-.flex-item-100 {
+.scroll-view-item-h {
+	display: inline-block;
 	width: 100%;
-	height: 200rpx;
-	line-height: 200rpx;
+	height: 300rpx;
+	line-height: 300rpx;
 	text-align: center;
 }
 
+/* 6. Swiper 样式 */
+.swiper-item {
+	display: block;
+	width: 100%;
+	height: 300rpx;
+	line-height: 300rpx;
+	text-align: center;
+	font-size: 48rpx;
+}
+
+/* 7. Text 组件样式（无空格！） */
+.text-box {
+	margin-bottom: 40rpx;
+	padding: 40rpx 0;
+	display: flex;
+	min-height: 300rpx;
+	background-color: #d8d8d8;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	font-size: 30rpx;
+	color: #353535;
+	line-height: 1.8;
+}
+
+/* 8. Progress 组件样式（无空格！） */
+.progress-box {
+	height: 50rpx;
+	margin-bottom: 60rpx;
+}
+
+.progress-control button {
+	margin-top: 20rpx;
+}
+
+/* 9. 通用文本样式 */
 .text {
 	margin: 15rpx 10rpx;
 	padding: 0 20rpx;
-	background-color: #bebeb;
+	background-color: #bebebe;
 	height: 70rpx;
 	line-height: 70rpx;
 	color: #777;
 	font-size: 26rpx;
 }
 
-.scroll-view-item {
-	width: 100%;
-	height: 300rpx;
-	line-height: 300rpx;
-}
-
-.scroll-x {
-	white-space: nowrap;
-	/* 强制同一行显示文本，适配横向滚动 */
-	width: 100%;
-}
-
-.scroll-y {
-	height: 300rpx;
-	/* 固定高度，触发纵向滚动 */
-}
-
-.scroll-view-item-h {
-	display: inline-block;
-	height: 300rpx;
-	width: 100%;
-}
-
-.swiper-item {
-	display: block;
-	height: 300rpx;
-	line-height: 300rpx;
-	text-align: center;
-}
-
+/* 10. Logo 样式 */
 .logo {
 	background-image: url('/static/logo.png');
-	width: 10px;
-	height: 10px;
+	width: 100rpx;
+	height: 100rpx;
 	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
 }
 
-.text - box {
-	margin - bottom: 40rpx;
-	padding: 40rpx 0;
-	display: flex;
-	min - height: 300rpx;
-	background - color: #d8d8d8;
-	justify - content: center;
-	align - items: center;
-	text - align: center;
-	font - size: 30rpx;
-	color: #353535;
-	line - height: 1.8;
+/* 11. 顶部标题栏样式 */
+.smart-page-head {
+	padding: 20rpx 0;
+	background-color: #007aff;
+	color: #fff;
 }
 
-.progress - box {
-	height: 50rpx;
-	margin - bottom: 60rpx;
-}
-
-.progress - control button {
-	margin - top: 20rpx;
+.smart-page-head-title {
+	font-size: 32rpx;
+	text-align: center;
+	font-weight: bold;
 }
