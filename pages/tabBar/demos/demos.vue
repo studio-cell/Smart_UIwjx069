@@ -2,6 +2,7 @@
 	<view class="demos-container">
 		<view class="page-title">DEMOS 页面</view>
 		<navigator url="/pages/login/login" class="to-login-btn">前往登录页</navigator>
+		<navigator url="/pages/cityExplore/cityExplore" class="to-city-btn">城市探索</navigator>
 	</view>
 </template>
 
@@ -41,5 +42,17 @@
 		color: #fff;
 		font-size: 30rpx;
 		border-radius: 6rpx;
+	}
+
+	.to-city-btn {
+		width: 200rpx;
+		height: 70rpx;
+		line-height: 70rpx;
+		text-align: center;
+		background-color: #09BB07;
+		color: #fff;
+		font-size: 30rpx;
+		border-radius: 6rpx;
+		margin-top: 20rpx;
 	}
 </style>
