@@ -85,6 +85,20 @@
 			"style": {
 				"navigationBarTitleText": "城市探索"
 			}
+		},
+		{
+			"path" : "pages/APIpages/LogPage/Logpage",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/APIpages/Timepage/Timepage",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
 		}
 	],
 	"globalStyle": {

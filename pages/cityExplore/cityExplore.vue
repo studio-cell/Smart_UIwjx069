@@ -249,6 +249,10 @@
 		height: 400rpx;
 	}
 
+	.video:hover {
+		cursor: pointer;
+	}
+
 	.preference-title {
 		font-weight: bold;
 		margin-bottom: 10rpx;

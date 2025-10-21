@@ -3,6 +3,14 @@
 		<text class="api-title">API 演示页面</text>
 		<text class="api-desc">这里可以写 uni-app API 调用示例，比如网络请求、本地存储等</text>
 	</view>
+	<view>
+		<navigator url="/pages/APIpages/LogPage/Logpage"> 
+		<button>打印日志</button></navigator>
+		</view>
+	<view>
+		<navigator url="/pages/APIpages/Timepage/Timepage"> 
+		<button>定时器</button></navigator>
+		</view>
 </template>
 
 <script>
