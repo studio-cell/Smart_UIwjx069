@@ -11,6 +11,10 @@
 		<navigator url="/pages/APIpages/Timepage/Timepage"> 
 		<button>定时器</button></navigator>
 		</view>
+		<view>
+			<navigator url="/pages/APIpages/StoragePage/StoragePage"> 
+			<button>存储器</button></navigator>
+			</view>
 </template>
 
 <script>
