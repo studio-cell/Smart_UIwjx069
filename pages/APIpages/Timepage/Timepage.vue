@@ -2,13 +2,13 @@
 	<view>
 		<view style="padding:30rpx; display: flex; flex-direction: column;">
 			<!-- 启动基础定时器 -->
-			<button @click="startTimeout()" type="primary">启动单次计时器</button>
+			<button @click="onsetTimeout()" type="primary">启动单次计时器</button>
 
 			<!-- 启动带参数的定时器 -->
-			<button @click="startTimeoutWithParams()" type="default">启动带参定时器</button>
+			<button @click="onsetTimeout()" type="default">启动带参定时器</button>
 
 			<!-- 取消定时器 -->
-			<button @click="clearTimeoutHandler()" type="warn">取消计时器</button>
+			<button @click="onclearTimeout()" type="warn">取消计时器</button>
 		</view>
 
 		<!-- 显示定时器状态 -->
@@ -28,7 +28,7 @@
 		},
 		methods: {
 			// 基础定时器：3秒后执行
-			startTimeout() {
+			onsetTimeout() {
 				// 先清除已有定时器，避免重复创建
 				if (this.timer) {
 					clearTimeout(this.timer);
@@ -45,7 +45,7 @@
 			},
 
 			// 带参数的定时器
-			startTimeoutWithParams() {
+			onsetTimeout() {
 				if (this.timer) {
 					clearTimeout(this.timer);
 				}
@@ -63,7 +63,7 @@
 			},
 
 			// 取消定时器
-			clearTimeoutHandler() {
+			onclearTimeout() {
 				if (this.timer) {
 					clearTimeout(this.timer);
 					this.timer = null;
