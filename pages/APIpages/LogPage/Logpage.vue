@@ -10,9 +10,7 @@
 </template>
 
 <script>
-	// 移除未使用的导入（避免编译警告）
-	// import { createWeakRefSentry } from 'XrFrame/kanata/lib/frontend';
-
+	
 	export default {
 		data() {
 			return {
@@ -29,7 +27,6 @@
 		},
 		methods: {
 			onLog() {
-				// 修正变量名拼写错误（mayname → myname）
 				console.log("onLog()--> Name:", this.myname);
 				console.log("当前标题：", this.title);
 			},
@@ -62,8 +59,8 @@
 
 <style>
 	button {
-		padding: 20rpx;
-		background-color: #000000;
+		padding: 10rpx;
+		background-color: #00aa7f;
 		color: white;
 		border: none;
 		border-radius: 8rpx;

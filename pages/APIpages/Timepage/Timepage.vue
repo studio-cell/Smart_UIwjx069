@@ -85,10 +85,10 @@
 
 <style>
 	button {
-		margin: 20rpx 0;
+		margin: 10rpx 0;
 		/* 垂直方向间距 */
 		padding: 20rpx;
-		font-size: 28rpx;
+		font-size: 30rpx;
 	}
 
 	text {

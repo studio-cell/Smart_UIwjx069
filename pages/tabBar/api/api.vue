@@ -1,7 +1,7 @@
 <template>
 	<view class="api-container">
 		<text class="api-title">API 演示页面</text>
-		<text class="api-desc">这里可以写 uni-app API 调用示例，比如网络请求、本地存储等</text>
+		<text class="api-desc"></text>
 	</view>
 	<view>
 		<navigator url="/pages/APIpages/LogPage/Logpage"> 
@@ -49,7 +49,7 @@
 	}
 
 	.api-desc {
-		color: #666;
+		color: #aa5500;
 		line-height: 40rpx;
 	}
 </style>
