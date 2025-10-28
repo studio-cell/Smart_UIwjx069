@@ -1,5 +1,15 @@
 {
-	"pages": [{
+	"pages": [
+		// 若想让新闻列表页作为首页，放在pages数组第1位
+		{
+			"path": "pages/newsList/newsList",
+			"style": {
+				"navigationBarTitleText": "新闻列表", // 页面导航栏标题
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
 			"path": "pages/tabBar/tabcomPage/tabcomPage",
 			"style": {
 				"navigationBarTitleText": "组件演示"
@@ -87,24 +97,21 @@
 			}
 		},
 		{
-			"path" : "pages/APIpages/LogPage/Logpage",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
+			"path": "pages/APIpages/LogPage/Logpage",
+			"style": {
+				"navigationBarTitleText": ""
 			}
 		},
 		{
-			"path" : "pages/APIpages/Timepage/Timepage",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
+			"path": "pages/APIpages/Timepage/Timepage",
+			"style": {
+				"navigationBarTitleText": ""
 			}
 		},
 		{
-			"path" : "pages/APIpages/StoragePage/StoragePage",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
+			"path": "pages/APIpages/StoragePage/StoragePage",
+			"style": {
+				"navigationBarTitleText": ""
 			}
 		}
 	],
