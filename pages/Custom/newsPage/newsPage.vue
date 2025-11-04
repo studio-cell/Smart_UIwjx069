@@ -5,17 +5,10 @@
 
 		<!-- 循环渲染新闻卡片：删除标签内注释，修正语法 -->
 		<view class="card-list">
-			<cardViewText v-for="(item, index) in datalist" :key="item.nid" 
-				:nid="item.nid"
-				:title="item.title"
-				:isTop="item.isTop"
-				:author="item.author"
-				:comments="item.comments"
-				:time="item.time"
-				:showSearch="item.showSearch"
-				@title-click="goToDetail"
-				>
-				
+			<cardViewText v-for="(item, index) in datalist" :key="item.nid" :nid="item.nid" :title="item.title"
+				:isTop="item.isTop" :author="item.author" :comments="item.comments" :time="item.time"
+				:showSearch="item.showSearch" @title-click="goToDetail">
+
 				<template v-slot:search-box v-if="item.showSearch">
 					<view class="search-box">
 						<text class="search-label">搜索：</text>
@@ -28,13 +21,12 @@
 </template>
 
 <script>
-	
-	import cardViewText from "@/components/cardViewText.vue";
+	import cardViewText from "@/components/NewsView.vue";
 
 	export default {
 		components: {
 			cardViewText
-		}, 
+		},
 		data() {
 			return {
 				datalist: [{

@@ -2,7 +2,7 @@
 	"pages": [
 		// 若想让新闻列表页作为首页，放在pages数组第1位
 		{
-			"path": "pages/newsList/newsList",
+			"path": "pages/Custom/newsPage/newsPage",
 			"style": {
 				"navigationBarTitleText": "新闻列表", // 页面导航栏标题
 				"navigationBarBackgroundColor": "#fff",
@@ -112,6 +112,13 @@
 			"path": "pages/APIpages/StoragePage/StoragePage",
 			"style": {
 				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path" : "pages/Custom/CardViewPage/CardViewPage",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
 			}
 		}
 	],
