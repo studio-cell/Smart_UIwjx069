@@ -66,8 +66,8 @@
 						author: "财联社",
 						comments: 452,
 						time: "2025.10.08",
-						mode: 1,
-						images: [],
+						mode: 2,
+						images: ["/static/news3.jpg"],
 						showSearch: true,
 						searchTags: ["今日金价", "黄金行情", "研报解读"],
 						bgColor: "#fff"
@@ -81,7 +81,7 @@
 						comments: 0,
 						time: "2025.10.08 09:50",
 						mode: 3,
-						images: ["/static/city4.jpg", "/static/city5.jpg", "/static/logo.png"], 
+						images: ["/static/city4.jpg", "/static/city5.jpg", "/static/news4.jpg"], 
 						showSearch: false,
 						searchTags: [],
 						bgColor: "#f9f9f9"
