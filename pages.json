@@ -131,7 +131,13 @@
 			"style": {
 				"navigationBarTitleText": "天气预报"
 			}
-		}
+		},
+		{
+			"path": "pages/downloadImagePage/downloadImagePage",
+			"style": {
+				"navigationBarTitleText": "下载网络图片"
+			}
+		} 
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
