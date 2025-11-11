@@ -115,10 +115,15 @@
 			}
 		},
 		{
-			"path" : "pages/Custom/CardViewPage/CardViewPage",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
+			"path": "pages/Custom/CardViewPage/CardViewPage",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		},
+		{
+			"path": "pages/chooseImagePage/chooseImagePage",
+			"style": {
+				"navigationBarTitleText": "选择并预览图片"
 			}
 		}
 	],
