@@ -1,6 +1,6 @@
 <template>
 	<view class="comp-a-container"
-		style="margin-bottom: 50rpx; padding: 30rpx; background: #f5f5f5; border-radius: 12rpx;">
+		style="margin-bottom: 50rpx; padding: 30rpx; background: #ff9d13; border-radius: 12rpx;">
 		<text
 			style="font-size: 32rpx; font-weight: bold; color: #333; display: block; margin-bottom: 20rpx;">子组件A</text>
 

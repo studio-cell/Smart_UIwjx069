@@ -59,7 +59,7 @@
 
 	.label {
 		font-size: 28rpx;
-		color: #333;
+		color: #ff0000;
 		width: 120rpx;
 	}
 </style>

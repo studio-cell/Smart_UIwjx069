@@ -1,5 +1,5 @@
 <template>
-	<view class="comp-b-container" style="padding: 30rpx; background: #f8f8f8; border-radius: 12rpx;">
+	<view class="comp-b-container" style="padding: 30rpx; background: #19ffdd; border-radius: 12rpx;">
 		<text
 			style="font-size: 32rpx; font-weight: bold; color: #333; display: block; margin-bottom: 20rpx;">子组件B</text>
 
@@ -11,7 +11,7 @@
 
 		<!-- 输入回传值：绑定到callbackValue，点击按钮回传给父 -->
 		<view class="b-box">
-			<text style="font-size: 24rpx; color: #666; margin-right: 16rpx;">回传值：</text>
+			<text style="font-size: 24rpx; color: #aa5500; margin-right: 16rpx;">回传值：</text>
 			<input type="text" v-model="callbackValue"
 				style="flex: 1; border: 1rpx solid #ccc; padding: 12rpx; border-radius: 8rpx; color: yellow;"
 				placeholder="请输入要回传的值" />
