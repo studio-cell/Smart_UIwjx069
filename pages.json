@@ -137,7 +137,15 @@
 			"style": {
 				"navigationBarTitleText": "下载网络图片"
 			}
-		} 
+		},
+		{
+			"path": "pages/IntentPage/IntentPage", // 父页面路径
+			"style": {
+				"navigationBarTitleText": "组件传值实战", // 页面标题
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
+		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
