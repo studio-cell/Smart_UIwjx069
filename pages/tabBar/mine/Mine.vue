@@ -1,28 +1,38 @@
 <template>
-	<view class="grammar-container">
-		<view class="page-title">语法</view>
-		<!-- 展示简单文本 -->
-		<view class="text-item">Hello UniAPP</view>
-		<view class="text-item">4</view>
-		<view class="text-item">NO</view>
-		<view class="text-item">!euV olleH</view>
-		<view class="text-item">今天天气真好</view>
-		<!-- 展示状态相关文本，可结合数据绑定 -->
-		<view class="text-item">State的值是{{ stateValue }}</view>
-		<view class="text-item">State的值是{{ stateValue }}</view>
-		<view class="text-item">State is {{ stateValueEn }}</view>
-		<!-- 展示对象数据 -->
-		<view class="object-item">{{ object1 }}</view>
-		<view class="object-item">{{ object2 }}</view>
-		<!-- 展示列表数据 -->
-		<view class="list-item" v-for="(item, index) in listData" :key="index">
-			{{ item }}
+	<view class="mine-container">
+		<!-- 未登录状态 -->
+		<view v-if="!userInfo.isLogin" class="unlogin-container">
+			<text class="unlogin-text">HI~ 欢迎回来</text>
+			<navigator url="/pages/login/login" class="login-btn">登录</navigator>
+			<view class="unlogin-desc">
+				登录后可查看收藏、历史、发表评论
+			</view>
 		</view>
-		<!-- 展示带键值对的文本 -->
-		<view class="key-value-item">0.title:how to lists in Vue?</view>
-		<view>
-			<!-- 引用 static 目录下的 logo.png -->
-			<image src="/static/logo.png" mode="widthFix"></image>
+
+		<!-- 已登录状态 -->
+		<view v-else class="login-container">
+			<view class="user-info">
+				<image src="/static/avatar.png" class="avatar"></image>
+				<text class="username">{{ userInfo.username }}</text>
+			</view>
+			<view class="mine-list">
+				<view class="mine-item">
+					<text class="item-icon">⭐</text>
+					<text class="item-text">我的收藏</text>
+				</view>
+				<view class="mine-item">
+					<text class="item-icon">🕒</text>
+					<text class="item-text">浏览历史</text>
+				</view>
+				<view class="mine-item">
+					<text class="item-icon">💬</text>
+					<text class="item-text">我的评论</text>
+				</view>
+				<view class="mine-item" @click="handleLogout">
+					<text class="item-icon">🚪</text>
+					<text class="item-text">退出登录</text>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -31,68 +41,139 @@
 	export default {
 		data() {
 			return {
-				stateValue: 'Vue', // 状态值
-				stateValueEn: 'vue', // 英文状态值
-				object1: {
-					id: 1,
-					name: 'uni-app'
-				}, // 第一个对象
-				object2: {
-					id: 2,
-					name: 'HTML'
-				}, // 第二个对象
-				listData: [0, 1, 0, 1, 0, 1, 0, 1] // 列表数据
+				userInfo: {
+					isLogin: false
+				} // 默认未登录
 			};
+		},
+		onShow() {
+			// 页面显示时，从本地存储读取登录状态（刷新页面状态）
+			this.getUserStatus();
+		},
+		methods: {
+			getUserStatus() {
+				const user = uni.getStorageSync("userInfo") || {
+					isLogin: false
+				};
+				this.userInfo = user;
+
+				// 若已登录，确保TabBar文字是“我的”
+				if (user.isLogin) {
+					uni.setTabBarItem({
+						index: 3,
+						text: "我的"
+					});
+				} else {
+					// 未登录，TabBar文字改为“未登录”
+					uni.setTabBarItem({
+						index: 3,
+						text: "未登录"
+					});
+				}
+			},
+			handleLogout() {
+				// 退出登录：清除本地存储+更新状态
+				uni.removeStorageSync("userInfo");
+				this.userInfo = {
+					isLogin: false
+				};
+				uni.setTabBarItem({
+					index: 3,
+					text: "未登录"
+				});
+				uni.showToast({
+					title: "已退出登录"
+				});
+			}
 		}
 	};
 </script>
 
 <style scoped>
-	.grammar-container {
-		padding: 15rpx;
-		background-color: #fff;
+	.mine-container {
+		background-color: #f7f7f7;
 		min-height: 100vh;
+		padding: 20rpx;
 	}
 
-	.page-title {
-		font-size: 36rpx;
+	/* 未登录样式 */
+	.unlogin-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 200rpx;
+	}
+
+	.unlogin-text {
+		font-size: 32rpx;
+		color: #333;
+		margin-bottom: 40rpx;
+	}
+
+	.login-btn {
+		width: 200rpx;
+		height: 70rpx;
+		line-height: 70rpx;
+		text-align: center;
+		background-color: #d00;
+		color: #fff;
+		border-radius: 35rpx;
+		font-size: 28rpx;
+		text-decoration: none;
+		margin-bottom: 20rpx;
+	}
+
+	.unlogin-desc {
+		font-size: 22rpx;
+		color: #999;
+	}
+
+	/* 已登录样式 */
+	.login-container {
+		margin-top: 30rpx;
+	}
+
+	.user-info {
+		display: flex;
+		align-items: center;
+		margin-bottom: 40rpx;
+	}
+
+	.avatar {
+		width: 120rpx;
+		height: 120rpx;
+		border-radius: 50%;
+		margin-right: 20rpx;
+	}
+
+	.username {
+		font-size: 32rpx;
 		font-weight: bold;
 		color: #333;
-		text-align: center;
-		padding: 20rpx 0;
-		margin-bottom: 10rpx;
 	}
 
-	.text-item,
-	.object-item,
-	.key-value-item {
+	.mine-list {
+		background: #fff;
+		border-radius: 12rpx;
+		padding: 10rpx 0;
+	}
+
+	.mine-item {
+		display: flex;
+		align-items: center;
+		padding: 20rpx 20rpx;
+		border-bottom: 1rpx solid #f5f5f5;
+	}
+
+	.item-icon {
+		font-size: 32rpx;
+		margin-right: 20rpx;
+		color: #d00;
+	}
+
+	.item-text {
 		font-size: 26rpx;
 		color: #333;
-		line-height: 40rpx;
-		margin-bottom: 10rpx;
-		text-align: center;
-	}
-
-	.object-item {
-		color: #007AFF;
-		/*让对象文本显示为蓝色，与示例类似*/
-	}
-
-	.list-item {
-		font-size: 26rpx;
-		color: green;
-		/*让列表项显示为绿色，与示例类似*/
-		line-height: 40rpx;
-		margin-bottom: 5rpx;
-		text-align: center;
-	}
-
-	.key-value-item {
-		font-size: 26rpx;
-		color: purple;
-		/*让键值对文本显示为紫色，与示例类似*/
-		line-height: 40rpx;
-		margin-top: 20rpx;
-		text-align: center;
+		flex: 1;
 	}
 </style>

@@ -1,162 +1,158 @@
 <template>
-	<view class="tabcom-container">
-		<!-- 页面标题 -->
-		<view class="page-title">组件说明</view>
+	<view class="news-container">
+		<!-- 顶部分类导航 -->
+		<TabBanner :list="categories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
-		<!-- 1. 容器组件 - view（点击跳转） -->
-		<view class="component-card" @click="gotoViewPage">
-			<view class="component-title">1. 容器组件 - view</view>
-			<view class="component-desc">
-				基础容器组件，用于包裹其他组件（如 text、button），可通过 style 控制布局，类似 HTML 的 div 标签。
+		<!-- 下拉刷新容器 -->
+		<scroll-view scroll-y class="news-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
+			refresher-threshold="100">
+			<!-- 数据更新提醒（3秒后自动消失） -->
+			<view v-if="showUpdateTip" class="update-tip">
+				为您更新了{{ updateCount }}条内容
 			</view>
-			<view class="jump-tip">点击卡片 → 查看 view 组件示例</view>
-		</view>
 
-		<!-- 2. 基础内容组件 - text（点击跳转） -->
-		<view class="component-card" @click="gotoTextPage">
-			<view class="component-title">2. 基础内容组件 - text</view>
-			<view class="component-desc">
-				用于展示文本内容的组件，支持文本可选性、空格显示等属性。
+			<!-- 新闻列表 -->
+			<view class="news-list">
+				<NewsCard v-for="news in filteredNews" :key="news.nid" :nid="news.nid" :title="news.title"
+					:cover="news.cover" :summary="news.summary" :author="news.author" :time="news.time"
+					:comments="news.comments" :is-top="news.isTop" @card-click="goToDetail(news.nid)"></NewsCard>
 			</view>
-			<view class="jump-tip">点击卡片 → 查看 text 组件示例</view>
-		</view>
-
-		<!-- 3. 基础内容组件 - progress（点击跳转） -->
-		<view class="component-card" @click="gotoProgressPage">
-			<view class="component-title">3. 基础内容组件 - progress</view>
-			<view class="component-desc">
-				进度条组件，用于展示任务进度，支持自定义颜色、显示百分比。
-			</view>
-			<view class="jump-tip">点击卡片 → 查看 progress 组件示例</view>
-		</view>
-
-		<!-- 4. 表单组件 -->
-		<view class="component-card">
-			<view class="component-title">4. 表单组件</view>
-			<view class="component-desc">用于收集用户输入的组件集合</view>
-			<view class="component-desc">• input：单行文本输入框（账号、密码等）</view>
-			<view class="component-desc">• checkbox：复选框（多选场景）</view>
-			<view class="component-desc">• textarea：多行文本输入框（意见反馈等）</view>
-			<view class="component-desc">• button：按钮组件（提交、重置等操作）</view>
-			<view class="component-desc">• label：标签组件（描述表单元素作用）</view>
-			<view class="component-desc">• form：表单容器（整体验证、提交）</view>
-		</view>
-
-		<!-- 5. 导航组件 - navigator -->
-		<view class="component-card">
-			<view class="component-title">5. 导航组件 - navigator</view>
-			<view class="component-desc">
-				页面跳转组件，支持跳转到普通页面、tabBar 页面，类似 HTML 的 a 标签。
-			</view>
-			<!-- navigator 跳转按钮 -->
-			<navigator url="/pages/components/view/view" open-type="navigate" class="navigator-btn">
-				跳 view 页面
-			</navigator>
-			<navigator url="/pages/components/text/text" open-type="navigate" class="navigator-btn"
-				style="margin-left: 15rpx;">
-				跳 text 页面
-			</navigator>
-			<navigator url="/pages/components/progress/progress" open-type="navigate" class="navigator-btn"
-				style="margin-left: 15rpx;">
-				跳 progress 页面
-			</navigator>
-		</view>
+		</scroll-view>
 	</view>
 </template>
 
 <script>
+	import TabBanner from "@/components/TabBanner.vue";
+	import NewsCard from "@/components/NewsCard.vue";
+	import newsData from "@/Data/news.json";
+
 	export default {
+		components: {
+			TabBanner,
+			NewsCard
+		},
 		data() {
-			return {};
+			return {
+				categories: newsData.categories,
+				newsList: newsData.newsList,
+				currentTab: 0,
+				showUpdateTip: false, // 是否显示更新提醒
+				updateCount: 0 // 更新的新闻数量
+			};
+		},
+		computed: {
+			filteredNews() {
+				const category = this.categories[this.currentTab];
+				return category === "推荐" ?
+					this.newsList :
+					this.newsList.filter(news => news.category === category);
+			}
 		},
 		methods: {
-			// 跳 view 页面
-			gotoViewPage() {
+			handleTabClick(index) {
+				this.currentTab = index;
+			},
+			goToDetail(nid) {
 				uni.navigateTo({
-					url: "/pages/components/view/view",
-					fail: (err) => console.log("跳 view 失败：", err)
+					url: `/pages/newsDetail/NewsDetail?nid=${nid}`
 				});
 			},
-			// 跳 text 页面
-			gotoTextPage() {
-				uni.navigateTo({
-					url: "/pages/components/text/text",
-					fail: (err) => console.log("跳 text 失败：", err)
-				});
-			},
-			// 跳 progress 页面
-			gotoProgressPage() {
-				uni.navigateTo({
-					url: "/pages/components/progress/progress",
-					fail: (err) => console.log("跳 progress 失败：", err)
-				});
+			// 下拉刷新触发
+			onPullDownRefresh() {
+				// 1. 模拟请求新数据（实际项目对接后端接口）
+				setTimeout(() => {
+					// 模拟新增2条新闻（拼接到数组前面）
+					const newNews = [{
+							nid: `new-${Date.now()}-1`,
+							title: "最新：央行降准0.5个百分点，释放长期资金约1万亿元",
+							cover: "/static/news/money.jpg",
+							summary: "央行今日宣布降准，支持实体经济发展，市场流动性将进一步宽松",
+							author: "金融时报",
+							time: "2025.10.26",
+							comments: 328,
+							isTop: false,
+							category: "财经"
+						},
+						{
+							nid: `new-${Date.now()}-2`,
+							title: "我国成功发射遥感四十号卫星，用于国土普查等任务",
+							cover: "/static/news/satellite.jpg",
+							summary: "长征二号丁运载火箭在酒泉卫星发射中心成功将遥感四十号卫星送入预定轨道",
+							author: "人民日报",
+							time: "2025.10.26",
+							comments: 512,
+							isTop: true,
+							category: "时政"
+						}
+					];
+
+					// 2. 更新新闻列表（新增数据在前）
+					this.newsList = [...newNews, ...this.newsList];
+					this.updateCount = newNews.length;
+					this.showUpdateTip = true; // 显示更新提醒
+
+					// 3. 停止下拉刷新动画
+					uni.stopPullDownRefresh();
+
+					// 4. 3秒后隐藏更新提醒
+					setTimeout(() => {
+						this.showUpdateTip = false;
+					}, 3000);
+
+					// 5. 显示TabBar红点提示（可选，提醒用户有新内容）
+					uni.showTabBarRedDot({
+						index: 0
+					}); // 新闻Tab（第1项）显示红点
+				}, 1500);
 			}
+		},
+		onHide() {
+			// 页面隐藏时，隐藏TabBar红点
+			uni.hideTabBarRedDot({
+				index: 0
+			});
 		}
 	};
 </script>
 
 <style scoped>
-	.tabcom-container {
-		padding: 15rpx;
+	.news-container {
 		background-color: #f7f7f7;
 		min-height: 100vh;
 	}
 
-	.page-title {
-		font-size: 36rpx;
-		font-weight: bold;
-		color: #333;
-		text-align: center;
-		padding: 20rpx 0;
-		margin-bottom: 10rpx;
+	.news-scroll {
+		height: calc(100vh - 120rpx);
+		padding: 20rpx;
 	}
 
-	.component-card {
-		background-color: #fff;
-		border-radius: 10rpx;
-		padding: 25rpx;
-		margin-bottom: 20rpx;
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
-		transition: background-color 0.2s;
-		cursor: pointer;
-	}
-
-	.component-card:hover {
-		background-color: #f0f7ff;
-	}
-
-	.component-title {
-		font-size: 30rpx;
-		font-weight: bold;
-		color: #222;
-		margin-bottom: 15rpx;
-		padding-left: 10rpx;
-		border-left: 4rpx solid #007aff;
-	}
-
-	.component-desc {
-		font-size: 26rpx;
-		color: #666;
-		line-height: 40rpx;
-		margin-bottom: 10rpx;
-	}
-
-	.jump-tip {
-		margin-top: 15rpx;
-		font-size: 24rpx;
-		color: #007aff;
-		text-align: right;
-		padding-right: 5rpx;
-	}
-
-	.navigator-btn {
-		display: inline-block;
-		margin-top: 15rpx;
-		padding: 12rpx 24rpx;
-		background-color: #007aff;
+	/* 数据更新提醒样式 */
+	.update-tip {
+		background-color: #d00;
 		color: #fff;
 		font-size: 24rpx;
-		border-radius: 6rpx;
-		text-decoration: none;
+		text-align: center;
+		padding: 12rpx;
+		border-radius: 8rpx;
+		margin-bottom: 20rpx;
+		animation: fadeIn 0.3s ease;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-20rpx);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.news-list {
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
 	}
 </style>
