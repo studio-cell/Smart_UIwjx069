@@ -1,42 +1,48 @@
 {
-	"pages": [
-		// 若想让新闻列表页作为首页，放在pages数组第1位
-		{
-			"path": "pages/Custom/newsPage/newsPage",
+	"pages": [{
+			"path": "pages/tabBar/news/News",
 			"style": {
-				"navigationBarTitleText": "新闻列表", // 页面导航栏标题
+				"navigationBarTitleText": "新闻",
 				"navigationBarBackgroundColor": "#fff",
 				"navigationBarTextStyle": "black"
 			}
 		},
 		{
-			"path": "pages/tabBar/tabcomPage/tabcomPage",
+			"path": "pages/tabBar/video/Video",
 			"style": {
-				"navigationBarTitleText": "组件演示"
+				"navigationBarTitleText": "视频",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/tabBar/topic/Topic",
+			"style": {
+				"navigationBarTitleText": "话题",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/tabBar/mine/Mine",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/Custom/newsPage/newsPage",
+			"style": {
+				"navigationBarTitleText": "新闻列表",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
 			}
 		},
 		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "uni-app"
-			}
-		},
-		{
-			"path": "pages/tabBar/api/api",
-			"style": {
-				"navigationBarTitleText": "API 演示"
-			}
-		},
-		{
-			"path": "pages/tabBar/demos/demos",
-			"style": {
-				"navigationBarTitleText": "DEMOS"
-			}
-		},
-		{
-			"path": "pages/tabBar/grammar/grammar",
-			"style": {
-				"navigationBarTitleText": "语法测试"
 			}
 		},
 		{
@@ -63,7 +69,7 @@
 		{
 			"path": "pages/login/login",
 			"style": {
-				"navigationBarTitleText": "登入"
+				"navigationBarTitleText": "登录"
 			}
 		},
 		{
@@ -99,25 +105,25 @@
 		{
 			"path": "pages/APIpages/LogPage/Logpage",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "打印日志"
 			}
 		},
 		{
 			"path": "pages/APIpages/Timepage/Timepage",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "定时器"
 			}
 		},
 		{
 			"path": "pages/APIpages/StoragePage/StoragePage",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "本地存储"
 			}
 		},
 		{
 			"path": "pages/Custom/CardViewPage/CardViewPage",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "卡片视图"
 			}
 		},
 		{
@@ -139,9 +145,9 @@
 			}
 		},
 		{
-			"path": "pages/IntentPage/IntentPage", // 父页面路径
+			"path": "pages/IntentPage/IntentPage",
 			"style": {
-				"navigationBarTitleText": "组件传值实战", // 页面标题
+				"navigationBarTitleText": "组件传值实战",
 				"navigationBarBackgroundColor": "#fff",
 				"navigationBarTextStyle": "black"
 			}
@@ -154,31 +160,32 @@
 		"backgroundColor": "#F8F8F8"
 	},
 	"tabBar": {
-		"backgroundColor": "#dcdcdc",
-		"color": "#333",
+		"backgroundColor": "#ffffff",
+		"color": "#666666",
+		"selectedColor": "#ff3333",
 		"list": [{
-				"text": "组件",
-				"pagePath": "pages/tabBar/tabcomPage/tabcomPage",
-				"iconPath": "/static/tabcomPage.png",
-				"selectedIconPath": "/static/tabcomPage (2).png"
+				"text": "新闻",
+				"pagePath": "pages/tabBar/news/News",
+				"iconPath": "/static/tab/news.png",
+				"selectedIconPath": "/static/tab/news_selected.png"
 			},
 			{
-				"text": "API",
-				"pagePath": "pages/tabBar/api/api",
-				"iconPath": "/static/API.png",
-				"selectedIconPath": "/static/API (1).png"
+				"text": "视频",
+				"pagePath": "pages/tabBar/video/Video",
+				"iconPath": "/static/tab/video.png",
+				"selectedIconPath": "/static/tab/video_selected.png"
 			},
 			{
-				"text": "DEMOS",
-				"pagePath": "pages/tabBar/demos/demos",
-				"iconPath": "/static/demos (2).png",
-				"selectedIconPath": "/static/demos.png"
+				"text": "话题",
+				"pagePath": "pages/tabBar/topic/Topic",
+				"iconPath": "/static/tab/topic.png",
+				"selectedIconPath": "/static/tab/topic_selected.png"
 			},
 			{
-				"text": "GRAMMAR",
-				"pagePath": "pages/tabBar/grammar/grammar",
-				"iconPath": "/static/grammar (2).png",
-				"selectedIconPath": "/static/grammar.png"
+				"text": "我的",
+				"pagePath": "pages/tabBar/mine/Mine",
+				"iconPath": "/static/tab/mine.png",
+				"selectedIconPath": "/static/tab/mine_selected.png"
 			}
 		]
 	},
