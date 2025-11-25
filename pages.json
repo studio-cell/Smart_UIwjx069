@@ -151,6 +151,15 @@
 				"navigationBarBackgroundColor": "#fff",
 				"navigationBarTextStyle": "black"
 			}
+		},
+		// 新闻详情页
+		{
+			"path": "pages/newsDetail/NewsDetail",
+			"style": {
+				"navigationBarTitleText": "新闻详情",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
 		}
 	],
 	"globalStyle": {
