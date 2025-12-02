@@ -1,0 +1,52 @@
+{
+	"bsonType": "object",
+	"description": "账户表：存储用户登录验证信息，与UserInfo表关联",
+	"required": ["username", "password", "register_time", "user_id"],
+	"permission": {
+		"read": false, 
+		"create": true, 
+		"update": false, 
+		"delete": false 
+	},
+	"properties": {
+		"_id": {
+			"description": "账户ID，系统自动生成"
+		},
+		"username": {
+			"bsonType": "string",
+			"title": "用户名",
+			"description": "登录用户名，唯一不可重复",
+			"trim": "both",
+			"minLength": 3,
+			"maxLength": 12,
+			"unique": true 
+		},
+		"password": {
+			"bsonType": "string",
+			"title": "密码",
+			"description": "存储加密后的密码（实际项目需加密，此处模拟）",
+			"trim": "both",
+			"minLength": 6,
+			"maxLength": 16
+		},
+		"register_time": {
+			"bsonType": "timestamp",
+			"title": "注册时间",
+			"description": "账户创建时间，自动填充"
+		},
+		"last_login_time": {
+			"bsonType": "timestamp",
+			"title": "最后登录时间",
+			"description": "用户最近登录时间"
+		},
+		"user_id": {
+			"bsonType": "string",
+			"title": "关联用户ID",
+			"description": "关联UserInfo表的_id字段，建立表关联",
+			"foreignKey": {
+				"collection": "UserInfo", 
+				"field": "_id" 
+			}
+		}
+	}
+}
