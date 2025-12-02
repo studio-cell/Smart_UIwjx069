@@ -1,60 +1,81 @@
 {
-  "newsList": [
-    {
-      "nid": "T15627",
-      "title": "14个月从100家开到1000家门店，蜜雪冰城为何买下这家精酿啤酒商",
-      "cover": "/static/news/beer.jpg", // 新闻封面图路径
-      "summary": "蜜雪冰城通过收购精酿啤酒商，加速布局饮品多元化赛道",
-      "author": "界面新闻",
-      "time": "2025.10.07",
-      "comments": 56,
-      "isTop": true,
-      "category": "财经"
-    },
-    {
-      "nid": "B4485",
-      "title": "把握历史大势 共创美好未来（观沧海）",
-      "cover": "/static/news/history.jpg",
-      "summary": "深入解读时代发展趋势，探讨共同富裕的实现路径",
-      "author": "人民日报",
-      "time": "2025.10.25",
-      "comments": 1025,
-      "isTop": true,
-      "category": "时政"
-    },
-    {
-      "nid": "F7892",
-      "title": "黄金还能走多远？卖方高呼“第三浪启动”，230多份研报看多",
-      "cover": "/static/news/gold.jpg",
-      "summary": "国际金价持续上涨，机构纷纷上调目标价",
-      "author": "财联社",
-      "time": "2025.10.08",
-      "comments": 452,
-      "isTop": false,
-      "category": "财经"
-    },
-    {
-      "nid": "J3456",
-      "title": "“没有短板”的完美战鹰！歼-16机库独家探访",
-      "cover": "/static/news/plane.jpg",
-      "summary": "记者实地探访歼-16战机训练基地，揭秘其先进性能",
-      "author": "红星新闻",
-      "time": "2025.10.07",
-      "comments": 896,
-      "isTop": false,
-      "category": "军事"
-    },
-    {
-      "nid": "A9876",
-      "title": "加微信交友群，喜欢就聊，找喜欢的人",
-      "cover": "/static/news/ad.jpg",
-      "summary": "我主良缘打造高品质交友平台，助力单身青年脱单",
-      "author": "我主良缘文化",
-      "time": "2025.10.08",
-      "comments": 0,
-      "isTop": false,
-      "category": "广告"
-    }
-  ],
-  "categories": ["推荐", "时政", "财经", "军事", "娱乐", "科技"] // 新闻分类
+	"categories": ["推荐", "时政", "财经", "军事", "娱乐", "科技", "广告"],
+	"newsList": [{
+			"nid": "1",
+			"title": "示例新闻1",
+			"cover": "/static/news/beer.jpg",
+			"summary": "新闻摘要...",
+			"author": "作者",
+			"time": "2025.10.20",
+			"comments": 100,
+			"isTop": true,
+			"category": "推荐"
+		},
+		{
+			"nid": "2",
+			"title": "示例新闻2",
+			"cover": "/static/news/history.jpg",
+			"summary": "新闻摘要...",
+			"author": "作者",
+			"time": "2025.10.20",
+			"comments": 80,
+			"isTop": false,
+			"category": "时政"
+		},
+		{
+			"nid": "T15627",
+			"title": "14个月从100家开到1000家门店，蜜雪冰城为何买下这家精酿啤酒商",
+			"cover": "/static/news/beer.jpg",
+			"summary": "蜜雪冰城通过收购精酿啤酒商，加速布局饮品多元化赛道",
+			"author": "界面新闻",
+			"time": "2025.10.07",
+			"comments": 56,
+			"isTop": true,
+			"category": "财经"
+		},
+		{
+			"nid": "B4485",
+			"title": "把握历史大势 共创美好未来（观沧海）",
+			"cover": "/static/news/history.jpg",
+			"summary": "深入解读时代发展趋势，探讨共同富裕的实现路径",
+			"author": "人民日报",
+			"time": "2025.10.25",
+			"comments": 1025,
+			"isTop": true,
+			"category": "时政"
+		},
+		{
+			"nid": "F7892",
+			"title": "黄金还能走多远？卖方高呼“第三浪启动”，230多份研报看多",
+			"cover": "/static/news/gold.jpg",
+			"summary": "国际金价持续上涨，机构纷纷上调目标价",
+			"author": "财联社",
+			"time": "2025.10.08",
+			"comments": 452,
+			"isTop": false,
+			"category": "财经"
+		},
+		{
+			"nid": "J3456",
+			"title": "“没有短板”的完美战鹰！歼-16机库独家探访",
+			"cover": "/static/news/plane.jpg",
+			"summary": "记者实地探访歼-16战机训练基地，揭秘其先进性能",
+			"author": "红星新闻",
+			"time": "2025.10.07",
+			"comments": 896,
+			"isTop": false,
+			"category": "军事"
+		},
+		{
+			"nid": "A9876",
+			"title": "加微信交友群，喜欢就聊，找喜欢的人",
+			"cover": "/static/news/ad.jpg",
+			"summary": "我主良缘打造高品质交友平台，助力单身青年脱单",
+			"author": "我主良缘文化",
+			"time": "2025.10.08",
+			"comments": 0,
+			"isTop": false,
+			"category": "广告"
+		}
+	]
 }

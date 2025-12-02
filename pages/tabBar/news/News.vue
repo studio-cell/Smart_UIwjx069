@@ -155,4 +155,4 @@
 		flex-direction: column;
 		gap: 20rpx;
 	}
-</style>图片路径怎么修改
+</style>

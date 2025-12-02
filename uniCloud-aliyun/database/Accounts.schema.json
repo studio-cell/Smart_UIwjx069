@@ -17,8 +17,8 @@
 			"title": "用户名",
 			"description": "登录用户名，唯一不可重复",
 			"trim": "both",
-			"minLength": 3,
-			"maxLength": 12,
+			"minLength": 2,
+			"maxLength": 10,
 			"unique": true 
 		},
 		"password": {
