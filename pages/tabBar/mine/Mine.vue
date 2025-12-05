@@ -9,11 +9,14 @@
 			</view>
 		</view>
 
-		<!-- 已登录状态 -->
+		<!-- 已登录状态（新增昵称展示） -->
 		<view v-else class="login-container">
 			<view class="user-info">
 				<image src="/static/avatar.png" class="avatar"></image>
-				<text class="username">{{ userInfo.username }}</text>
+				<view class="user-text"> <!-- 新增外层容器 -->
+					<text class="username">{{ userInfo.username }}</text>
+					<text class="nickname">昵称：{{ userInfo.nickname || '未设置' }}</text> <!-- 昵称展示 -->
+				</view>
 			</view>
 			<view class="mine-list">
 				<view class="mine-item">
@@ -55,6 +58,7 @@
 				const user = uni.getStorageSync("userInfo") || {
 					isLogin: false
 				};
+				console.log('当前用户信息：', user); // 新增日志，校验昵称是否存在
 				this.userInfo = user;
 
 				// 若已登录，确保TabBar文字是“我的”
@@ -146,10 +150,23 @@
 		margin-right: 20rpx;
 	}
 
+	/* 新增用户文字容器样式 */
+	.user-text {
+		display: flex;
+		flex-direction: column;
+	}
+
 	.username {
 		font-size: 32rpx;
 		font-weight: bold;
 		color: #333;
+	}
+
+	/* 新增昵称样式 */
+	.nickname {
+		font-size: 24rpx;
+		color: #999;
+		margin-top: 8rpx;
 	}
 
 	.mine-list {
