@@ -3,7 +3,7 @@
 	"newsList": [{
 			"nid": "1",
 			"title": "示例新闻1",
-			"cover": "/static/news/beer.jpg",
+			"cover": "/static/news/R-C.jpg",
 			"summary": "新闻摘要...",
 			"author": "作者",
 			"time": "2025.10.20",
@@ -14,7 +14,7 @@
 		{
 			"nid": "2",
 			"title": "示例新闻2",
-			"cover": "/static/news/history.jpg",
+			"cover": "/static/news/rc.jpg",
 			"summary": "新闻摘要...",
 			"author": "作者",
 			"time": "2025.10.20",
@@ -58,7 +58,7 @@
 		{
 			"nid": "J3456",
 			"title": "“没有短板”的完美战鹰！歼-16机库独家探访",
-			"cover": "/static/news/plane.jpg",
+			"cover": "/static/news/plan.jpg",
 			"summary": "记者实地探访歼-16战机训练基地，揭秘其先进性能",
 			"author": "红星新闻",
 			"time": "2025.10.07",

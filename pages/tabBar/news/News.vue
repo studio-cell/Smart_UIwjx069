@@ -5,7 +5,7 @@
 
 		<!-- 下拉刷新容器 -->
 		<scroll-view scroll-y class="news-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
-			refresher-threshold="100">
+			:refresher-threshold="100">
 			<!-- 数据更新提醒（3秒后自动消失） -->
 			<view v-if="showUpdateTip" class="update-tip">
 				为您更新了{{ updateCount }}条内容
