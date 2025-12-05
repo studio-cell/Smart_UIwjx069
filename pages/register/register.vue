@@ -7,6 +7,21 @@
 				<input class="input-field" placeholder="请输入用户名（3-12位）" v-model="username" />
 				<text class="error-tip" v-if="usernameError">{{ usernameError }}</text>
 			</view>
+			<!-- 昵称输入框 + 错误提示 -->
+			<view class="input-group">
+				<input class="input-field" placeholder="请输入昵称（2-10位）" v-model="nickname" />
+				<text class="error-tip" v-if="nicknameError">{{ nicknameError }}</text>
+			</view>
+			<!-- 手机号输入框 + 错误提示 -->
+			<view class="input-group">
+				<input class="input-field" placeholder="请输入手机号" v-model="mobile" type="number" />
+				<text class="error-tip" v-if="mobileError">{{ mobileError }}</text>
+			</view>
+			<!-- 邮箱输入框 + 错误提示 -->
+			<view class="input-group">
+				<input class="input-field" placeholder="请输入邮箱" v-model="email" />
+				<text class="error-tip" v-if="emailError">{{ emailError }}</text>
+			</view>
 			<!-- 密码输入框 + 错误提示 -->
 			<view class="input-group">
 				<input class="input-field" type="password" placeholder="请输入密码（6-16位）" v-model="password" />
@@ -31,10 +46,16 @@
 		data() {
 			return {
 				username: '',
+				nickname: '', // 新增昵称
+				mobile: '', // 新增手机号
+				email: '', // 新增邮箱
 				password: '',
 				confirmPassword: '',
 				// 错误提示文本
 				usernameError: '',
+				nicknameError: '', // 新增昵称错误提示
+				mobileError: '', // 新增手机号错误提示
+				emailError: '', // 新增邮箱错误提示
 				passwordError: '',
 				confirmPwdError: '',
 				// 表单是否有效（控制按钮禁用状态）
@@ -45,6 +66,18 @@
 			// 实时监听输入变化，校验表单
 			username() {
 				this.validateUsername();
+				this.checkFormValid();
+			},
+			nickname() { // 新增昵称监听
+				this.validateNickname();
+				this.checkFormValid();
+			},
+			mobile() { // 新增手机号监听
+				this.validateMobile();
+				this.checkFormValid();
+			},
+			email() { // 新增邮箱监听
+				this.validateEmail();
 				this.checkFormValid();
 			},
 			password() {
@@ -69,6 +102,39 @@
 					this.usernameError = '';
 				}
 			},
+			// 新增：校验昵称（2-10位，支持中文、字母、数字）
+			validateNickname() {
+				const reg = /^[\u4e00-\u9fa5a-zA-Z0-9]{2,10}$/;
+				if (!this.nickname) {
+					this.nicknameError = '昵称不能为空';
+				} else if (!reg.test(this.nickname)) {
+					this.nicknameError = '昵称需为2-10位中文、字母或数字';
+				} else {
+					this.nicknameError = '';
+				}
+			},
+			// 新增：校验手机号（11位有效手机号）
+			validateMobile() {
+				const reg = /^1[3-9]\d{9}$/;
+				if (!this.mobile) {
+					this.mobileError = '手机号不能为空';
+				} else if (!reg.test(this.mobile)) {
+					this.mobileError = '请输入有效的11位手机号';
+				} else {
+					this.mobileError = '';
+				}
+			},
+			// 新增：校验邮箱格式
+			validateEmail() {
+				const reg = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+				if (!this.email) {
+					this.emailError = '邮箱不能为空';
+				} else if (!reg.test(this.email)) {
+					this.emailError = '请输入有效的邮箱地址';
+				} else {
+					this.emailError = '';
+				}
+			},
 			// 校验密码：6-16位，需包含字母+数字（增强安全性）
 			validatePassword() {
 				const reg = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{6,16}$/;
@@ -90,22 +156,27 @@
 					this.confirmPwdError = '';
 				}
 			},
-			// 检查表单是否全部有效（无错误提示+输入不为空）
+			// 检查表单是否全部有效（包含新增字段）
 			checkFormValid() {
-				this.isFormValid = !this.usernameError && !this.passwordError && !this.confirmPwdError &&
-					this.username && this.password && this.confirmPassword;
+				this.isFormValid = !this.usernameError && !this.nicknameError && !this.mobileError && !this.emailError &&
+					!this.passwordError && !this.confirmPwdError &&
+					this.username && this.nickname && this.mobile && this.email &&
+					this.password && this.confirmPassword;
 			},
-			// 注册核心逻辑
+			// 注册核心逻辑（新增字段存入本地）
 			handleRegister() {
 				// 再次校验（防止绕过实时监听直接点击按钮）
 				this.validateUsername();
+				this.validateNickname();
+				this.validateMobile();
+				this.validateEmail();
 				this.validatePassword();
 				this.checkConfirmPwd();
 				this.checkFormValid();
 
 				if (!this.isFormValid) return; // 表单无效则终止
 
-				// 模拟注册请求（实际项目替换为 uni.request 调用后端接口）
+				// 模拟注册请求
 				uni.showLoading({
 					title: '注册中...'
 				});
@@ -113,13 +184,16 @@
 				setTimeout(() => {
 					uni.hideLoading();
 
-					// 模拟注册成功：将用户信息存入本地存储（供登录页校验）
+					// 模拟注册成功：存入所有用户信息（包含新增字段）
 					uni.setStorageSync('registeredUsers', [
-						...(uni.getStorageSync('registeredUsers') || []), // 保留已有注册用户
+						...(uni.getStorageSync('registeredUsers') || []),
 						{
 							username: this.username,
+							nickname: this.nickname, // 新增昵称
+							mobile: this.mobile, // 新增手机号
+							email: this.email, // 新增邮箱
 							password: this.password
-						} // 新增当前注册用户
+						}
 					]);
 
 					// 提示+跳转登录页
@@ -135,6 +209,9 @@
 
 					// 清空表单
 					this.username = '';
+					this.nickname = '';
+					this.mobile = '';
+					this.email = '';
 					this.password = '';
 					this.confirmPassword = '';
 				}, 1200);

@@ -4,6 +4,8 @@
 			<view class="title">登录</view>
 			<input class="input-field" placeholder="请输入用户名" v-model="username" />
 			<input class="input-field" type="password" placeholder="请输入密码" v-model="password" />
+			<!-- 可选：新增登录方式提示（非必填） -->
+			<view class="login-tip">也可使用注册时的手机号/邮箱登录（暂仅支持用户名）</view>
 			<button class="login-btn" @click="handleLogin">登录</button>
 			<view class="navigate-text">
 				没有账号？<navigator url="/pages/register/register">去注册</navigator>
@@ -22,7 +24,7 @@
 		},
 		methods: {
 			handleLogin() {
-				// 1. 非空校验（保持不变）
+				// 1. 非空校验
 				if (!this.username || !this.password) {
 					uni.showToast({
 						title: '请输入完整的用户名和密码',
@@ -31,25 +33,28 @@
 					return;
 				}
 
-				// 2. 关键修改：读取注册页保存的所有用户（不再用固定账号）
+				// 2. 读取注册页保存的所有用户
 				const registeredUsers = uni.getStorageSync('registeredUsers') || [];
-				// 查找是否有匹配的用户名和密码
+				// 查找匹配的用户（仅用户名+密码，如需支持手机号/邮箱登录可扩展）
 				const matchedUser = registeredUsers.find(user => {
 					return user.username === this.username && user.password === this.password;
 				});
 
-				// 3. 校验结果（匹配成功则登录，否则提示错误）
+				// 3. 校验结果
 				if (matchedUser) {
-					// 登录成功逻辑（保持不变）
+					// 登录成功：保存完整用户信息（包含昵称/手机号/邮箱）
 					uni.showLoading({
 						title: '登录中...'
 					});
 
 					setTimeout(() => {
 						uni.hideLoading();
-						// 保存登录状态
+						// 保存完整登录状态（新增昵称/手机号/邮箱）
 						uni.setStorageSync('userInfo', {
-							username: this.username,
+							username: matchedUser.username,
+							nickname: matchedUser.nickname, // 新增昵称
+							mobile: matchedUser.mobile, // 新增手机号
+							email: matchedUser.email, // 新增邮箱
 							isLogin: true
 						});
 						uni.showToast({
@@ -69,7 +74,7 @@
 						}, 500);
 					}, 1000);
 				} else {
-					// 账号或密码不匹配（保持不变）
+					// 账号或密码不匹配
 					uni.showToast({
 						title: '账号或密码错误，请重新输入',
 						icon: 'none'
@@ -82,7 +87,6 @@
 </script>
 
 <style scoped>
-	/* 样式保持不变，无需修改 */
 	.login-container {
 		display: flex;
 		justify-content: center;
@@ -116,6 +120,14 @@
 		padding: 0 20rpx;
 		margin-bottom: 20rpx;
 		font-size: 26rpx;
+	}
+
+	/* 新增登录提示样式 */
+	.login-tip {
+		font-size: 22rpx;
+		color: #999;
+		margin-bottom: 20rpx;
+		text-align: right;
 	}
 
 	.login-btn {
