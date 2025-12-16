@@ -24,63 +24,61 @@
 		},
 		methods: {
 			handleLogin() {
-				// 1. 非空校验
 				if (!this.username || !this.password) {
 					uni.showToast({
-						title: '请输入完整的用户名和密码',
+						title: '请输入账号密码',
 						icon: 'none'
 					});
 					return;
 				}
 
-				// 2. 读取注册页保存的所有用户
-				const registeredUsers = uni.getStorageSync('registeredUsers') || [];
-				// 查找匹配的用户（仅用户名+密码，如需支持手机号/邮箱登录可扩展）
-				const matchedUser = registeredUsers.find(user => {
-					return user.username === this.username && user.password === this.password;
-				});
-
-				// 3. 校验结果
-				if (matchedUser) {
-					// 登录成功：保存完整用户信息（包含昵称/手机号/邮箱）
-					uni.showLoading({
-						title: '登录中...'
-					});
-
-					setTimeout(() => {
-						uni.hideLoading();
-						// 保存完整登录状态（新增昵称/手机号/邮箱）
-						uni.setStorageSync('userInfo', {
-							username: matchedUser.username,
-							nickname: matchedUser.nickname, // 新增昵称
-							mobile: matchedUser.mobile, // 新增手机号
-							email: matchedUser.email, // 新增邮箱
-							isLogin: true
-						});
-						uni.showToast({
-							title: '登录成功',
-							icon: 'success'
-						});
-						// 跳转到新闻首页
-						uni.switchTab({
-							url: '/pages/tabBar/news/News'
-						});
-						// 切换TabBar文字
-						setTimeout(() => {
-							uni.setTabBarItem({
-								index: 3,
-								text: "我的"
+				// 调用登录云函数
+				uniCloud.callFunction({
+					name: 'userLogin',
+					data: {
+						username: this.username,
+						password: this.password
+					},
+					success: (res) => {
+						if (res.result.code === 200) {
+							// 保存登录状态到本地
+							uni.setStorageSync('userInfo', {
+								isLogin: true,
+								username: res.result.account.username,
+								userId: res.result.account.user_id,
+								detail: res.result.userInfo
 							});
-						}, 500);
-					}, 1000);
-				} else {
-					// 账号或密码不匹配
-					uni.showToast({
-						title: '账号或密码错误，请重新输入',
-						icon: 'none'
-					});
-					this.password = '';
-				}
+
+							uni.showToast({
+								title: '登录成功'
+							});
+							// 切换TabBar文字
+							setTimeout(() => {
+								uni.setTabBarItem({
+									index: 3,
+									text: '我的'
+								});
+							}, 500);
+							// 跳转到新闻首页
+							uni.switchTab({
+								url: '/pages/tabBar/news/News'
+							});
+						} else {
+							uni.showToast({
+								title: res.result.message,
+								icon: 'none'
+							});
+							this.password = '';
+						}
+					},
+					fail: (err) => {
+						uni.showToast({
+							title: '登录失败',
+							icon: 'none'
+						});
+						console.error(err);
+					}
+				});
 			}
 		}
 	};

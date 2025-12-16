@@ -165,56 +165,58 @@
 			},
 			// 注册核心逻辑（新增字段存入本地）
 			handleRegister() {
-				// 再次校验（防止绕过实时监听直接点击按钮）
-				this.validateUsername();
-				this.validateNickname();
-				this.validateMobile();
-				this.validateEmail();
-				this.validatePassword();
-				this.checkConfirmPwd();
-				this.checkFormValid();
-
-				if (!this.isFormValid) return; // 表单无效则终止
-
-				// 模拟注册请求
-				uni.showLoading({
-					title: '注册中...'
-				});
-
-				setTimeout(() => {
-					uni.hideLoading();
-
-					// 模拟注册成功：存入所有用户信息（包含新增字段）
-					uni.setStorageSync('registeredUsers', [
-						...(uni.getStorageSync('registeredUsers') || []),
-						{
-							username: this.username,
-							nickname: this.nickname, // 新增昵称
-							mobile: this.mobile, // 新增手机号
-							email: this.email, // 新增邮箱
-							password: this.password
-						}
-					]);
-
-					// 提示+跳转登录页
+				// 表单校验（原有逻辑不变）
+				if (!this.username || !this.password || !this.confirmPassword) {
 					uni.showToast({
-						title: '注册成功！',
-						icon: 'success'
+						title: '请完善信息',
+						icon: 'none'
 					});
-					setTimeout(() => {
-						uni.navigateTo({
-							url: '/pages/login/login'
-						});
-					}, 1500);
+					return;
+				}
 
-					// 清空表单
-					this.username = '';
-					this.nickname = '';
-					this.mobile = '';
-					this.email = '';
-					this.password = '';
-					this.confirmPassword = '';
-				}, 1200);
+				// 调用注册云函数（传递账号密码+用户信息）
+				uniCloud.callFunction({
+					name: 'userRegister',
+					data: {
+						username: this.username,
+						password: this.password,
+						userInfo: {
+							name: this.realName, // 前端新增真实姓名输入框
+							birth_year: this.birthYear, // 出生年份输入框
+							mobile: this.mobile, // 手机号输入框
+							email: this.email, // 邮箱输入框
+							address: {
+								city: this.city,
+								street: this.street
+							},
+							intro: this.intro
+						}
+					},
+					success: (res) => {
+						if (res.result.code === 200) {
+							uni.showToast({
+								title: '注册成功'
+							});
+							setTimeout(() => {
+								uni.navigateTo({
+									url: '/pages/login/login'
+								});
+							}, 1500);
+						} else {
+							uni.showToast({
+								title: res.result.message,
+								icon: 'none'
+							});
+						}
+					},
+					fail: (err) => {
+						uni.showToast({
+							title: '注册失败',
+							icon: 'none'
+						});
+						console.error(err);
+					}
+				});
 			}
 		}
 	};
