@@ -166,6 +166,12 @@
 			"style": {
 				"navigationBarTitleText": "用户列表"
 			}
+		},
+		{
+			"path": "pages/editUser/editUser",
+			"style": {
+				"navigationBarTitleText": "编辑用户"
+			}
 		}
 	],
 	"globalStyle": {

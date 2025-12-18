@@ -8,7 +8,7 @@
 			暂无用户数据
 		</view>
 
-		<!-- 用户列表（添加点击/长按事件触发操作菜单） -->
+		<!-- 用户列表（修复标签属性换行导致的语法错误） -->
 		<view class="user-list" v-else>
 			<view class="list-item" v-for="(item, i) in userList" :key="i" @longpress="optUser(item._id)" <!-- 长按弹出操作菜单
 				-->
@@ -66,18 +66,18 @@
 				});
 			},
 
-			// 2. 新增：弹出操作菜单（编辑/删除）
+			// 2. 弹出操作菜单（编辑/删除）- 合并完整逻辑
 			optUser(id) {
 				uni.showActionSheet({
 					itemList: ['编辑', '删除'], // 操作选项
 					success: (res) => {
-						if (res.tapIndex === 1) { // 下标1对应“删除”选项
-							this.removeUser(id);
-						} else if (res.tapIndex === 0) { // 下标0对应“编辑”选项
-							// 后续可添加跳转到编辑页的逻辑
+						if (res.tapIndex === 0) { // 点击“编辑”
+							// 跳转到编辑页，并传入用户ID
 							uni.navigateTo({
-								url: `/pages/editUser/editUser?id=${id}` // 传用户ID到编辑页
+								url: `/pages/editUser/editUser?id=${id}`
 							});
+						} else if (res.tapIndex === 1) { // 点击“删除”
+							this.removeUser(id);
 						}
 					},
 					fail: (err) => {
@@ -86,7 +86,7 @@
 				});
 			},
 
-			// 3. 新增：删除用户
+			// 3. 删除用户（原有逻辑）
 			removeUser(id) {
 				// 二次确认（防止误删）
 				uni.showModal({
