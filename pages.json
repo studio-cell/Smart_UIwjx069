@@ -172,6 +172,14 @@
 			"style": {
 				"navigationBarTitleText": "编辑用户"
 			}
+		},
+		{
+			"path": "pages/topicDetail/TopicDetail",
+			"style": {
+				"navigationBarTitleText": "话题详情",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
 		}
 	],
 	"globalStyle": {
