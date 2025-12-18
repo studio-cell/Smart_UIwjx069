@@ -22,6 +22,16 @@
 				<input class="input-field" placeholder="请输入邮箱" v-model="email" />
 				<text class="error-tip" v-if="emailError">{{ emailError }}</text>
 			</view>
+			<!-- 新增：出生年份（云函数必填） -->
+			<view class="input-group">
+				<input class="input-field" placeholder="请输入出生年份（1950-2020）" v-model="birthYear" type="number" />
+				<text class="error-tip" v-if="birthYearError">{{ birthYearError }}</text>
+			</view>
+			<!-- 新增：城市（address.city 云函数必填） -->
+			<view class="input-group">
+				<input class="input-field" placeholder="请输入城市" v-model="city" />
+				<text class="error-tip" v-if="cityError">{{ cityError }}</text>
+			</view>
 			<!-- 密码输入框 + 错误提示 -->
 			<view class="input-group">
 				<input class="input-field" type="password" placeholder="请输入密码（6-16位）" v-model="password" />
@@ -46,16 +56,20 @@
 		data() {
 			return {
 				username: '',
-				nickname: '', // 新增昵称
-				mobile: '', // 新增手机号
-				email: '', // 新增邮箱
+				nickname: '', // 昵称（对应UserInfo.name）
+				mobile: '',
+				email: '',
+				birthYear: '', // 新增：出生年份
+				city: '', // 新增：城市（address.city）
 				password: '',
 				confirmPassword: '',
 				// 错误提示文本
 				usernameError: '',
-				nicknameError: '', // 新增昵称错误提示
-				mobileError: '', // 新增手机号错误提示
-				emailError: '', // 新增邮箱错误提示
+				nicknameError: '',
+				mobileError: '',
+				emailError: '',
+				birthYearError: '', // 新增：出生年份错误提示
+				cityError: '', // 新增：城市错误提示
 				passwordError: '',
 				confirmPwdError: '',
 				// 表单是否有效（控制按钮禁用状态）
@@ -68,16 +82,24 @@
 				this.validateUsername();
 				this.checkFormValid();
 			},
-			nickname() { // 新增昵称监听
+			nickname() {
 				this.validateNickname();
 				this.checkFormValid();
 			},
-			mobile() { // 新增手机号监听
+			mobile() {
 				this.validateMobile();
 				this.checkFormValid();
 			},
-			email() { // 新增邮箱监听
+			email() {
 				this.validateEmail();
+				this.checkFormValid();
+			},
+			birthYear() { // 新增：监听出生年份
+				this.validateBirthYear();
+				this.checkFormValid();
+			},
+			city() { // 新增：监听城市
+				this.validateCity();
 				this.checkFormValid();
 			},
 			password() {
@@ -102,7 +124,7 @@
 					this.usernameError = '';
 				}
 			},
-			// 新增：校验昵称（2-10位，支持中文、字母、数字）
+			// 校验昵称（2-10位，支持中文、字母、数字）
 			validateNickname() {
 				const reg = /^[\u4e00-\u9fa5a-zA-Z0-9]{2,10}$/;
 				if (!this.nickname) {
@@ -113,7 +135,7 @@
 					this.nicknameError = '';
 				}
 			},
-			// 新增：校验手机号（11位有效手机号）
+			// 校验手机号（11位有效手机号）
 			validateMobile() {
 				const reg = /^1[3-9]\d{9}$/;
 				if (!this.mobile) {
@@ -124,7 +146,7 @@
 					this.mobileError = '';
 				}
 			},
-			// 新增：校验邮箱格式
+			// 校验邮箱格式
 			validateEmail() {
 				const reg = /^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 				if (!this.email) {
@@ -133,6 +155,25 @@
 					this.emailError = '请输入有效的邮箱地址';
 				} else {
 					this.emailError = '';
+				}
+			},
+			// 新增：校验出生年份
+			validateBirthYear() {
+				const year = Number(this.birthYear);
+				if (!this.birthYear) {
+					this.birthYearError = '出生年份不能为空';
+				} else if (year < 1950 || year > 2020) {
+					this.birthYearError = '出生年份需在1950-2020之间';
+				} else {
+					this.birthYearError = '';
+				}
+			},
+			// 新增：校验城市
+			validateCity() {
+				if (!this.city) {
+					this.cityError = '城市不能为空';
+				} else {
+					this.cityError = '';
 				}
 			},
 			// 校验密码：6-16位，需包含字母+数字（增强安全性）
@@ -158,44 +199,50 @@
 			},
 			// 检查表单是否全部有效（包含新增字段）
 			checkFormValid() {
-				this.isFormValid = !this.usernameError && !this.nicknameError && !this.mobileError && !this.emailError &&
-					!this.passwordError && !this.confirmPwdError &&
-					this.username && this.nickname && this.mobile && this.email &&
-					this.password && this.confirmPassword;
+				this.isFormValid = !this.usernameError && !this.nicknameError && !this.mobileError &&
+					!this.emailError && !this.birthYearError && !this.cityError && !this.passwordError &&
+					!this.confirmPwdError && this.username && this.nickname && this.mobile && this.email &&
+					this.birthYear && this.city && this.password && this.confirmPassword;
 			},
-			// 注册核心逻辑（新增字段存入本地）
+			// 注册核心逻辑（修复云函数调用）
 			handleRegister() {
-				// 表单校验（原有逻辑不变）
-				if (!this.username || !this.password || !this.confirmPassword) {
-					uni.showToast({
-						title: '请完善信息',
-						icon: 'none'
-					});
-					return;
-				}
+				// 再次校验（防止绕过实时监听）
+				this.validateUsername();
+				this.validateNickname();
+				this.validateMobile();
+				this.validateEmail();
+				this.validateBirthYear();
+				this.validateCity();
+				this.validatePassword();
+				this.checkConfirmPwd();
+				this.checkFormValid();
 
-				// 调用注册云函数（传递账号密码+用户信息）
+				if (!this.isFormValid) return;
+
+				// 调用注册云函数（参数匹配云函数要求）
 				uniCloud.callFunction({
-					name: 'userRegister',
+					name: 'userRegister', // 确保云函数已部署
 					data: {
 						username: this.username,
-						password: this.password,
+						password: this.password, // 测试阶段明文，后续加密
 						userInfo: {
-							name: this.realName, // 前端新增真实姓名输入框
-							birth_year: this.birthYear, // 出生年份输入框
-							mobile: this.mobile, // 手机号输入框
-							email: this.email, // 邮箱输入框
-							address: {
+							name: this.nickname, // 修正：用nickname替代realName
+							birth_year: Number(this.birthYear), // 转数字（匹配schema的int）
+							mobile: this.mobile,
+							email: this.email,
+							address: { // 构造address对象（必填）
 								city: this.city,
-								street: this.street
+								street: '' // 选填，暂时为空
 							},
-							intro: this.intro
+							intro: '' // 选填，暂时为空
 						}
 					},
 					success: (res) => {
+						console.log('云函数返回：', res); // 调试关键
 						if (res.result.code === 200) {
 							uni.showToast({
-								title: '注册成功'
+								title: '注册成功',
+								icon: 'success'
 							});
 							setTimeout(() => {
 								uni.navigateTo({
@@ -204,17 +251,17 @@
 							}, 1500);
 						} else {
 							uni.showToast({
-								title: res.result.message,
+								title: res.result.message || '注册失败',
 								icon: 'none'
 							});
 						}
 					},
 					fail: (err) => {
 						uni.showToast({
-							title: '注册失败',
+							title: '调用云函数失败',
 							icon: 'none'
 						});
-						console.error(err);
+						console.error('云函数调用失败：', err);
 					}
 				});
 			}

@@ -1,70 +1,16 @@
+// uniCloud-aliyun/database/default.schema.json
 {
 	"bsonType": "object",
-	"description": "用户信息表：存储用户个人详细信息",
-	"required": ["name", "birth_year", "mobile", "email", "address"],
+	"description": "默认通用表（请勿存放用户核心信息）",
 	"permission": {
-		"read": false,
+		"read": true,
 		"create": true,
 		"update": true,
-		"delete": false
+		"delete": true
 	},
 	"properties": {
 		"_id": {
-			"description": "用户ID，系统自动生成，关联Accounts表的user_id"
-		},
-		"name": {
-			"bsonType": "string",
-			"title": "姓名",
-			"description": "用户真实姓名",
-			"trim": "both",
-			"minLength": 2,
-			"maxLength": 17
-		},
-		"birth_year": {
-			"bsonType": "int",
-			"title": "出生年份",
-			"description": "1950-2020之间的整数",
-			"minimum": 1950,
-			"maximum": 2020
-		},
-		"mobile": {
-			"bsonType": "string",
-			"title": "手机号码",
-			"description": "符合手机号格式",
-			"pattern": "^1[3-9]\\d{9}$", // 手机号正则（11位有效手机号）
-			"trim": "both"
-		},
-		"email": {
-			"bsonType": "string",
-			"title": "邮箱",
-			"description": "符合邮箱格式",
-			"format": "email", // 邮箱格式校验
-			"trim": "both"
-		},
-		"address": {
-			"bsonType": "object",
-			"title": "地址",
-			"description": "包含城市和街道",
-			"required": ["city"], // city字段必填
-			"properties": {
-				"city": {
-					"bsonType": "string",
-					"title": "城市",
-					"trim": "both"
-				},
-				"street": {
-					"bsonType": "string",
-					"title": "街道",
-					"trim": "both"
-				}
-			}
-		},
-		"intro": {
-			"bsonType": "string",
-			"title": "个人简介",
-			"description": "非必填，去除头尾空白",
-			"trim": "both",
-			"maxLength": 500
+			"description": "文档ID，系统自动生成"
 		}
 	}
 }

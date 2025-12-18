@@ -1,4 +1,4 @@
-// 云函数：用户登录（验证账户+更新最后登录时间）
+// 云函数：userLogin（适配阿里云服务空间）
 exports.main = async (event, context) => {
 	const db = uniCloud.database();
 	const {
@@ -24,11 +24,11 @@ exports.main = async (event, context) => {
 
 		const account = accountRes.data[0];
 
-		// 2. 更新最后登录时间
+		// 2. 更新最后登录时间（修复：替换db.serverDate()为new Date()）
 		await db.collection('Accounts')
 			.doc(account._id)
 			.update({
-				last_login_time: db.serverDate()
+				last_login_time: new Date() // 适配阿里云
 			});
 
 		// 3. 查询关联的用户信息
