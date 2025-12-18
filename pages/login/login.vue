@@ -23,7 +23,9 @@
 			};
 		},
 		methods: {
+			// 整合后的登录核心方法（保留原有逻辑 + 优化体验）
 			handleLogin() {
+				// 1. 基础校验（保留原有逻辑）
 				if (!this.username || !this.password) {
 					uni.showToast({
 						title: '请输入账号密码',
@@ -32,16 +34,17 @@
 					return;
 				}
 
-				// 调用登录云函数
+				// 2. 调用登录云函数（整合新逻辑，保留原有云函数名userLogin）
 				uniCloud.callFunction({
-					name: 'userLogin',
+					name: 'userLogin', // 保持你原有云函数名，无需改为checkUser
 					data: {
 						username: this.username,
 						password: this.password
 					},
 					success: (res) => {
+						console.log('登录云函数返回：', res); // 新增调试日志
 						if (res.result.code === 200) {
-							// 保存登录状态到本地
+							// 3. 保存登录状态（保留你原有复杂状态存储逻辑）
 							uni.setStorageSync('userInfo', {
 								isLogin: true,
 								username: res.result.account.username,
@@ -49,34 +52,36 @@
 								detail: res.result.userInfo
 							});
 
+							// 4. 登录成功提示 + TabBar切换 + 跳转（保留原有逻辑）
 							uni.showToast({
-								title: '登录成功'
+								title: '登录成功',
+								icon: 'success' // 新增成功图标，优化体验
 							});
-							// 切换TabBar文字
 							setTimeout(() => {
 								uni.setTabBarItem({
 									index: 3,
 									text: '我的'
 								});
 							}, 500);
-							// 跳转到新闻首页
 							uni.switchTab({
 								url: '/pages/tabBar/news/News'
 							});
 						} else {
+							// 5. 登录失败处理（保留原有逻辑）
 							uni.showToast({
-								title: res.result.message,
+								title: res.result.message || '用户名或密码错误',
 								icon: 'none'
 							});
-							this.password = '';
+							this.password = ''; // 清空密码，防止重复提交
 						}
 					},
 					fail: (err) => {
+						// 6. 网络异常处理（优化提示文案）
 						uni.showToast({
-							title: '登录失败',
+							title: '网络异常，登录失败',
 							icon: 'none'
 						});
-						console.error(err);
+						console.error('登录云函数调用失败：', err); // 优化日志提示
 					}
 				});
 			}
