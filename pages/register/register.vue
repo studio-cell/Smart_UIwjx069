@@ -204,7 +204,7 @@
 					!this.confirmPwdError && this.username && this.nickname && this.mobile && this.email &&
 					this.birthYear && this.city && this.password && this.confirmPassword;
 			},
-			// 注册核心逻辑（修复云函数调用）
+			// 注册核心逻辑（合并 submitAddUser 逻辑，保留原有校验）
 			handleRegister() {
 				// 再次校验（防止绕过实时监听）
 				this.validateUsername();
@@ -219,24 +219,30 @@
 
 				if (!this.isFormValid) return;
 
-				// 调用注册云函数（参数匹配云函数要求）
+				// 构造提交给云函数的参数（整合 submitAddUser 的 formData 逻辑）
+				const formData = {
+					username: this.username,
+					password: this.password,
+					nickname: this.nickname,
+					mobile: this.mobile,
+					email: this.email,
+					userInfo: {
+						name: this.nickname,
+						birth_year: Number(this.birthYear),
+						mobile: this.mobile,
+						email: this.email,
+						address: {
+							city: this.city,
+							street: ''
+						},
+						intro: ''
+					}
+				};
+
+				// 调用注册云函数（优化错误提示和日志）
 				uniCloud.callFunction({
-					name: 'userRegister', // 确保云函数已部署
-					data: {
-						username: this.username,
-						password: this.password, // 测试阶段明文，后续加密
-						userInfo: {
-							name: this.nickname, // 修正：用nickname替代realName
-							birth_year: Number(this.birthYear), // 转数字（匹配schema的int）
-							mobile: this.mobile,
-							email: this.email,
-							address: { // 构造address对象（必填）
-								city: this.city,
-								street: '' // 选填，暂时为空
-							},
-							intro: '' // 选填，暂时为空
-						}
-					},
+					name: 'userRegister', // 若使用 addUser 云函数，可改为 'addUser'
+					data: formData,
 					success: (res) => {
 						console.log('云函数返回：', res); // 调试关键
 						if (res.result.code === 200) {
@@ -244,6 +250,16 @@
 								title: '注册成功',
 								icon: 'success'
 							});
+							// 清空表单（新增：优化用户体验）
+							this.username = '';
+							this.nickname = '';
+							this.mobile = '';
+							this.email = '';
+							this.birthYear = '';
+							this.city = '';
+							this.password = '';
+							this.confirmPassword = '';
+							// 跳转登录页
 							setTimeout(() => {
 								uni.navigateTo({
 									url: '/pages/login/login'

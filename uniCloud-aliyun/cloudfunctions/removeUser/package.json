@@ -1,0 +1,7 @@
+{
+  "name": "removeUser",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

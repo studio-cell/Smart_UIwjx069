@@ -160,6 +160,12 @@
 				"navigationBarBackgroundColor": "#fff",
 				"navigationBarTextStyle": "black"
 			}
+		},
+		{
+			"path": "pages/userList/userList",
+			"style": {
+				"navigationBarTitleText": "用户列表"
+			}
 		}
 	],
 	"globalStyle": {
