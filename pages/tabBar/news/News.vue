@@ -1,21 +1,25 @@
 <template>
 	<view class="news-container">
-		<!-- 顶部分类导航 -->
 		<TabBanner :list="categories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
-
-		<!-- 下拉刷新容器 -->
-		<scroll-view scroll-y class="news-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
-			:refresher-threshold="100">
-			<!-- 数据更新提醒（3秒后自动消失） -->
-			<view v-if="showUpdateTip" class="update-tip">
-				为您更新了{{ updateCount }}条内容
-			</view>
-
-			<!-- 新闻列表 -->
+		<scroll-view v-if="categories.length > 0" scroll-y class="news-scroll" @scrolltoupper="onPullDownRefresh"
+			refresher-enabled :refresher-threshold="100" ref="scrollRef">
+			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}条内容</view>
 			<view class="news-list">
-				<NewsCard v-for="news in filteredNews" :key="news.nid" :nid="news.nid" :title="news.title"
-					:cover="news.cover" :summary="news.summary" :author="news.author" :time="news.time"
-					:comments="news.comments" :is-top="news.isTop" @card-click="goToDetail(news.nid)"></NewsCard>
+				<!-- 核心修复：将 NewsView 所有属性写在一行，避免换行解析异常 -->
+				<view v-for="news in filteredNews" :key="news.nid" @click="goToDetail(news.nid)">
+					<NewsView :nid="news.nid" :title="news.title" :is-top="news.isTop" :author="news.author"
+						:comments="news.comments" :time="news.time" :mode="news.category === '广告' ? 3 : 2"
+						:images="[news.cover]" :bgColor="news.category === '广告' ? '#f9f9f9' : '#fff'"
+						:summary="news.summary" :showSearch="news.category === '广告'">
+						<template v-slot:tips v-if="news.category === '广告'">
+							<view class="search-box">
+								<text class="search-label">广告说明：</text>
+								<text class="search-tag">本内容为商业推广，不代表本平台观点</text>
+							</view>
+						</template>
+					</NewsView>
+				</view>
+				<view v-if="filteredNews.length === 0" class="empty-tip">暂无该分类的新闻内容</view>
 			</view>
 		</scroll-view>
 	</view>
@@ -23,94 +27,97 @@
 
 <script>
 	import TabBanner from "@/components/TabBanner.vue";
-	import NewsCard from "@/components/NewsCard.vue";
+	import NewsView from "@/components/NewsView.vue";
 	import newsData from "@/Data/news.json";
 
 	export default {
 		components: {
 			TabBanner,
-			NewsCard
+			NewsView
 		},
 		data() {
 			return {
 				categories: newsData.categories,
 				newsList: newsData.newsList,
 				currentTab: 0,
-				showUpdateTip: false, // 是否显示更新提醒
-				updateCount: 0 // 更新的新闻数量
+				showUpdateTip: false,
+				updateCount: 0,
+				scrollRef: null,
+				isRefreshing: false
 			};
 		},
 		computed: {
 			filteredNews() {
 				const category = this.categories[this.currentTab];
-				return category === "推荐" ?
-					this.newsList :
-					this.newsList.filter(news => news.category === category);
+				if (category === "推荐") return this.newsList.filter(n => n.category !== '广告');
+				if (category === "广告") return this.newsList.filter(n => n.category === '广告');
+				return this.newsList.filter(n => n.category === category && n.category !== '广告');
 			}
 		},
 		methods: {
 			handleTabClick(index) {
 				this.currentTab = index;
+				this.$nextTick(() => {
+					if (this.scrollRef) this.scrollRef.scrollTop = 0;
+				});
 			},
 			goToDetail(nid) {
+				const news = this.newsList.find(item => item.nid === nid);
+				if (news && news.category === '广告') {
+					uni.showToast({
+						title: "广告内容暂无法查看详情",
+						icon: "none"
+					});
+					return;
+				}
 				uni.navigateTo({
 					url: `/pages/newsDetail/NewsDetail?nid=${nid}`
 				});
 			},
-			// 下拉刷新触发
 			onPullDownRefresh() {
-				// 1. 模拟请求新数据（实际项目对接后端接口）
+				if (this.isRefreshing) return;
+				this.isRefreshing = true;
 				setTimeout(() => {
-					// 模拟新增2条新闻（拼接到数组前面）
 					const newNews = [{
-							nid: `new-${Date.now()}-1`,
-							title: "最新：央行降准0.5个百分点，释放长期资金约1万亿元",
-							cover: "/static/news/money.jpg",
-							summary: "央行今日宣布降准，支持实体经济发展，市场流动性将进一步宽松",
-							author: "金融时报",
-							time: "2025.10.26",
-							comments: 328,
-							isTop: false,
-							category: "财经"
-						},
-						{
-							nid: `new-${Date.now()}-2`,
-							title: "我国成功发射遥感四十号卫星，用于国土普查等任务",
-							cover: "/static/news/satellite.jpg",
-							summary: "长征二号丁运载火箭在酒泉卫星发射中心成功将遥感四十号卫星送入预定轨道",
-							author: "人民日报",
-							time: "2025.10.26",
-							comments: 512,
-							isTop: true,
-							category: "时政"
-						}
-					];
-
-					// 2. 更新新闻列表（新增数据在前）
+						nid: `new-${Date.now()}-1`,
+						title: "最新：央行降准0.5个百分点，释放长期资金约1万亿元",
+						cover: "https://picsum.photos/200/160",
+						summary: "央行今日宣布降准，支持实体经济发展，市场流动性将进一步宽松",
+						author: "金融时报",
+						time: "2025.10.26",
+						comments: 328,
+						isTop: false,
+						category: "财经"
+					}, {
+						nid: `new-${Date.now()}-2`,
+						title: "我国成功发射遥感四十号卫星，用于国土普查等任务",
+						cover: "https://picsum.photos/200/160",
+						summary: "长征二号丁运载火箭在酒泉卫星发射中心成功将遥感四十号卫星送入预定轨道",
+						author: "人民日报",
+						time: "2025.10.26",
+						comments: 512,
+						isTop: true,
+						category: "时政"
+					}];
 					this.newsList = [...newNews, ...this.newsList];
 					this.updateCount = newNews.length;
-					this.showUpdateTip = true; // 显示更新提醒
-
-					// 3. 停止下拉刷新动画
-					uni.stopPullDownRefresh();
-
-					// 4. 3秒后隐藏更新提醒
-					setTimeout(() => {
-						this.showUpdateTip = false;
-					}, 3000);
-
-					// 5. 显示TabBar红点提示（可选，提醒用户有新内容）
+					this.showUpdateTip = true;
+					this.$nextTick(() => uni.stopPullDownRefresh());
+					setTimeout(() => this.showUpdateTip = false, 3000);
 					uni.showTabBarRedDot({
 						index: 0
-					}); // 新闻Tab（第1项）显示红点
+					});
+					this.isRefreshing = false;
 				}, 1500);
 			}
 		},
 		onHide() {
-			// 页面隐藏时，隐藏TabBar红点
 			uni.hideTabBarRedDot({
 				index: 0
 			});
+		},
+		onUnmounted() {
+			this.isRefreshing = false;
 		}
 	};
 </script>
@@ -126,7 +133,6 @@
 		padding: 20rpx;
 	}
 
-	/* 数据更新提醒样式 */
 	.update-tip {
 		background-color: #d00;
 		color: #fff;
@@ -154,5 +160,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 20rpx;
+	}
+
+	.empty-tip {
+		text-align: center;
+		font-size: 28rpx;
+		color: #999;
+		margin-top: 100rpx;
 	}
 </style>

@@ -1,6 +1,6 @@
 <template>
 	<view class="detail-container">
-		<!-- 新闻头部信息 -->
+		<view class="back-btn" @click="goBack">← 返回</view>
 		<view class="detail-header">
 			<text class="detail-title">{{ news.title }}</text>
 			<view class="detail-meta">
@@ -9,13 +9,9 @@
 				<text class="detail-comments">{{ news.comments }}条评论</text>
 			</view>
 		</view>
-
-		<!-- 新闻封面图 -->
-		<view class="detail-cover">
-			<image :src="news.cover" mode="widthFix" class="cover-img"></image>
+		<view class="detail-cover" v-if="news.cover">
+			<image :src="news.cover" mode="widthFix" class="cover-img" @error="handleCoverError"></image>
 		</view>
-
-		<!-- 新闻正文 -->
 		<view class="detail-content">
 			<text class="content-text">{{ news.summary }}</text>
 			<text class="content-text">
@@ -23,19 +19,13 @@
 				本文相关背景补充：{{ news.category }}领域近期动态频繁，相关政策落地将进一步推动行业发展，后续将持续关注事件进展。
 			</text>
 		</view>
-
-		<!-- 操作按钮 -->
 		<view class="detail-actions">
 			<button class="action-btn" @click="handleLike">{{ isLiked ? '已点赞' : '点赞' }}</button>
 			<button class="action-btn" @click="handleCollect">{{ isCollected ? '已收藏' : '收藏' }}</button>
 			<button class="action-btn" @click="handleShare">分享</button>
 		</view>
-
-		<!-- 评论区 -->
 		<view class="comment-section">
 			<text class="comment-title">热门评论</text>
-
-			<!-- 评论输入框（未登录隐藏） -->
 			<view class="comment-input" v-if="userInfo.isLogin">
 				<input v-model="commentContent" placeholder="输入你的评论..." class="input-field" />
 				<button @click="submitComment" class="submit-btn">发布</button>
@@ -43,12 +33,10 @@
 			<view class="login-tip" v-else>
 				<navigator url="/pages/login/login" class="login-link">登录后可发表评论</navigator>
 			</view>
-
-			<!-- 评论列表 -->
 			<view class="comment-list">
 				<view class="comment-item" v-for="(item, idx) in commentList" :key="idx">
 					<view class="comment-user">
-						<image src="/static/avatar.png" class="user-avatar"></image>
+						<image src="https://picsum.photos/48/48" class="user-avatar"></image>
 						<text class="user-name">{{ item.username }}</text>
 						<text class="comment-time">{{ item.time }}</text>
 					</view>
@@ -58,102 +46,98 @@
 						<text class="like-count">{{ item.likeCount }}</text>
 					</view>
 				</view>
-				<view class="no-comment" v-if="commentList.length === 0">
-					暂无评论，快来抢沙发～
-				</view>
+				<view class="no-comment" v-if="commentList.length === 0">暂无评论，快来抢沙发～</view>
 			</view>
 		</view>
-
-		<!-- 精彩推荐 -->
 		<view class="recommend-section">
 			<text class="recommend-title">精彩推荐</text>
 			<view class="recommend-list">
-				<NewsCard v-for="item in recommendList" :key="item.nid" :nid="item.nid" :title="item.title"
-					:cover="item.cover" :summary="item.summary" :author="item.author" :time="item.time"
-					:comments="item.comments" :is-top="item.isTop" @card-click="goToDetail(item.nid)"></NewsCard>
+				<!-- 核心修复：将 NewsView 包裹在 view 中绑定点击事件 -->
+				<view v-for="item in recommendList" :key="item.nid" @click="goToDetail(item.nid)">
+					<NewsView :nid="item.nid" :title="item.title" :is-top="item.isTop" :author="item.author"
+						:comments="item.comments" :time="item.time" :mode="2" :images="[item.cover]"
+						:summary="item.summary"></NewsView>
+				</view>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
-	import NewsCard from "@/components/NewsCard.vue";
+	import NewsView from "@/components/NewsView.vue";
 	import newsData from "@/Data/news.json";
 
 	export default {
 		components: {
-			NewsCard
+			NewsView
 		},
 		data() {
 			return {
-				news: {}, // 当前新闻详情
+				news: {},
 				userInfo: {
 					isLogin: false
-				}, // 用户登录状态
-				commentContent: "", // 评论输入内容
-				commentList: [], // 评论列表
-				isLiked: false, // 是否点赞
-				isCollected: false, // 是否收藏
-				recommendList: [] // 精彩推荐列表
+				},
+				commentContent: "",
+				commentList: [],
+				isLiked: false,
+				isCollected: false,
+				recommendList: []
 			};
 		},
 		onLoad(options) {
 			const nid = options.nid;
-			// 根据nid获取当前新闻详情
-			this.news = newsData.newsList.find(item => item.nid === nid) || {};
-			// 获取用户登录状态
+			this.news = newsData.newsList.find(item => item.nid === nid) || {
+				title: "新闻不存在",
+				author: "未知来源",
+				time: "2025.10.26",
+				comments: 0,
+				summary: "暂无该新闻内容",
+				category: "推荐"
+			};
 			this.getUserStatus();
-			// 加载评论列表（模拟数据）
 			this.loadComments();
-			// 加载精彩推荐（随机3条其他新闻）
 			this.loadRecommend();
 		},
 		methods: {
-			// 获取用户登录状态
+			goBack() {
+				uni.navigateBack();
+			},
 			getUserStatus() {
 				const user = uni.getStorageSync("userInfo") || {
 					isLogin: false
 				};
 				this.userInfo = user;
 			},
-			// 加载评论列表（模拟）
 			loadComments() {
 				this.commentList = [{
-						username: "网友872503",
-						time: "2小时前",
-						content: "内容很精彩，支持一下！",
-						likeCount: 37,
-						isLiked: false
-					},
-					{
-						username: "平安379373",
-						time: "3小时前",
-						content: "分析得很到位，期待后续报道",
-						likeCount: 15,
-						isLiked: false
-					}
-				];
+					username: "网友872503",
+					time: "2小时前",
+					content: "内容很精彩，支持一下！",
+					likeCount: 37,
+					isLiked: false
+				}, {
+					username: "平安379373",
+					time: "3小时前",
+					content: "分析得很到位，期待后续报道",
+					likeCount: 15,
+					isLiked: false
+				}];
 			},
-			// 加载精彩推荐（随机3条不同新闻）
 			loadRecommend() {
-				const otherNews = newsData.newsList.filter(item => item.nid !== this.news.nid);
-				// 随机排序后取前3条
+				const otherNews = newsData.newsList.filter(item => item.nid !== this.news.nid && item.category !== '广告');
 				this.recommendList = otherNews.sort(() => Math.random() - 0.5).slice(0, 3);
 			},
-			// 跳转其他新闻详情
 			goToDetail(nid) {
 				uni.navigateTo({
 					url: `/pages/newsDetail/NewsDetail?nid=${nid}`
 				});
 			},
-			// 点赞
 			handleLike() {
 				this.isLiked = !this.isLiked;
 				uni.showToast({
 					title: this.isLiked ? '点赞成功' : '取消点赞'
 				});
 			},
-			// 收藏（登录校验）
 			handleCollect() {
 				if (!this.userInfo.isLogin) {
 					uni.navigateTo({
@@ -165,9 +149,7 @@
 				uni.showToast({
 					title: this.isCollected ? '收藏成功' : '取消收藏'
 				});
-				// 实际项目可将收藏状态存入本地存储或调用接口
 			},
-			// 分享
 			handleShare() {
 				uni.showActionSheet({
 					itemList: ['分享给好友', '分享到朋友圈', '复制链接'],
@@ -195,7 +177,6 @@
 					}
 				});
 			},
-			// 提交评论
 			submitComment() {
 				if (!this.commentContent.trim()) {
 					uni.showToast({
@@ -204,25 +185,25 @@
 					});
 					return;
 				}
-				// 新增评论到列表头部
 				this.commentList.unshift({
-					username: this.userInfo.username,
+					username: this.userInfo.username || "游客",
 					time: "刚刚",
 					content: this.commentContent,
 					likeCount: 0,
 					isLiked: false
 				});
-				// 清空输入框
 				this.commentContent = "";
 				uni.showToast({
 					title: '评论发布成功'
 				});
 			},
-			// 评论点赞
 			handleCommentLike(idx) {
 				const comment = this.commentList[idx];
 				comment.isLiked = !comment.isLiked;
 				comment.likeCount += comment.isLiked ? 1 : -1;
+			},
+			handleCoverError() {
+				this.$set(this.news, 'cover', 'https://picsum.photos/750/400');
 			}
 		}
 	};
@@ -231,13 +212,21 @@
 <style scoped>
 	.detail-container {
 		padding: 20rpx;
-		background-color: #fff;
+		background-color: #f7f7f7;
 		min-height: 100vh;
 	}
 
-	/* 头部信息 */
+	.back-btn {
+		font-size: 28rpx;
+		color: #1e88e5;
+		margin-bottom: 20rpx;
+	}
+
 	.detail-header {
 		margin-bottom: 20rpx;
+		background-color: #fff;
+		padding: 24rpx;
+		border-radius: 12rpx;
 	}
 
 	.detail-title {
@@ -257,7 +246,6 @@
 		justify-content: space-between;
 	}
 
-	/* 封面图 */
 	.detail-cover {
 		margin-bottom: 30rpx;
 	}
@@ -267,9 +255,11 @@
 		border-radius: 12rpx;
 	}
 
-	/* 正文 */
 	.detail-content {
 		margin-bottom: 30rpx;
+		background-color: #fff;
+		padding: 24rpx;
+		border-radius: 12rpx;
 	}
 
 	.content-text {
@@ -281,7 +271,6 @@
 		text-indent: 56rpx;
 	}
 
-	/* 操作按钮 */
 	.detail-actions {
 		display: flex;
 		justify-content: space-around;
@@ -298,16 +287,13 @@
 		color: #333;
 	}
 
-	.action-btn:nth-child(1).active {
-		background-color: #ff3333;
-		color: #fff;
-	}
-
-	/* 评论区 */
 	.comment-section {
 		margin-bottom: 30rpx;
 		padding-top: 20rpx;
 		border-top: 1rpx solid #f5f5f5;
+		background-color: #fff;
+		padding: 24rpx;
+		border-radius: 12rpx;
 	}
 
 	.comment-title {
@@ -414,9 +400,11 @@
 		padding: 40rpx 0;
 	}
 
-	/* 精彩推荐 */
 	.recommend-section {
 		margin-top: 30rpx;
+		background-color: #fff;
+		padding: 24rpx;
+		border-radius: 12rpx;
 	}
 
 	.recommend-title {
