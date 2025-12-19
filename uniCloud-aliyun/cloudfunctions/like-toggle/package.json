@@ -1,0 +1,7 @@
+{
+  "name": "like-toggle",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
