@@ -1,0 +1,7 @@
+{
+  "name": "category-add",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
