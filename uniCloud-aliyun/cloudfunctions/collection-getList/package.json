@@ -1,0 +1,7 @@
+{
+  "name": "collection-getList",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
