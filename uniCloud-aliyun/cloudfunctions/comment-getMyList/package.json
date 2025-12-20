@@ -1,0 +1,7 @@
+{
+  "name": "comment-getMyList",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
