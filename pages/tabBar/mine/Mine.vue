@@ -9,27 +9,33 @@
 			</view>
 		</view>
 
-		<!-- 已登录状态（新增昵称展示） -->
+		<!-- 已登录状态 -->
 		<view v-else class="login-container">
 			<view class="user-info">
 				<image src="/static/avatar.png" class="avatar"></image>
-				<view class="user-text"> <!-- 新增外层容器 -->
+				<view class="user-text">
 					<text class="username">{{ userInfo.username }}</text>
-					<text class="nickname">昵称：{{ userInfo.nickname || '未设置' }}</text> <!-- 昵称展示 -->
+					<text class="nickname">昵称：{{ userInfo.nickname || '未设置' }}</text>
 				</view>
 			</view>
 			<view class="mine-list">
-				<view class="mine-item">
+				<!-- 我的收藏：添加跳转 -->
+				<view class="mine-item" @click="goToCollection">
 					<text class="item-icon">⭐</text>
 					<text class="item-text">我的收藏</text>
+					<text class="item-arrow">＞</text>
 				</view>
-				<view class="mine-item">
+				<!-- 浏览历史：添加跳转 -->
+				<view class="mine-item" @click="goToHistory">
 					<text class="item-icon">🕒</text>
 					<text class="item-text">浏览历史</text>
+					<text class="item-arrow">＞</text>
 				</view>
-				<view class="mine-item">
+				<!-- 我的评论：添加跳转 -->
+				<view class="mine-item" @click="goToComment">
 					<text class="item-icon">💬</text>
 					<text class="item-text">我的评论</text>
+					<text class="item-arrow">＞</text>
 				</view>
 				<view class="mine-item" @click="handleLogout">
 					<text class="item-icon">🚪</text>
@@ -46,11 +52,10 @@
 			return {
 				userInfo: {
 					isLogin: false
-				} // 默认未登录
+				}
 			};
 		},
 		onShow() {
-			// 页面显示时，从本地存储读取登录状态（刷新页面状态）
 			this.getUserStatus();
 		},
 		methods: {
@@ -58,17 +63,14 @@
 				const user = uni.getStorageSync("userInfo") || {
 					isLogin: false
 				};
-				console.log('当前用户信息：', user); // 新增日志，校验昵称是否存在
+				console.log('当前用户信息：', user);
 				this.userInfo = user;
-
-				// 若已登录，确保TabBar文字是“我的”
 				if (user.isLogin) {
 					uni.setTabBarItem({
 						index: 3,
 						text: "我的"
 					});
 				} else {
-					// 未登录，TabBar文字改为“未登录”
 					uni.setTabBarItem({
 						index: 3,
 						text: "未登录"
@@ -76,7 +78,6 @@
 				}
 			},
 			handleLogout() {
-				// 退出登录：清除本地存储+更新状态
 				uni.removeStorageSync("userInfo");
 				this.userInfo = {
 					isLogin: false
@@ -87,6 +88,24 @@
 				});
 				uni.showToast({
 					title: "已退出登录"
+				});
+			},
+			// 跳转到我的收藏页
+			goToCollection() {
+				uni.navigateTo({
+					url: "/pages/mine/collection/collection"
+				});
+			},
+			// 跳转到浏览历史页
+			goToHistory() {
+				uni.navigateTo({
+					url: "/pages/mine/history/history"
+				});
+			},
+			// 跳转到我的评论页
+			goToComment() {
+				uni.navigateTo({
+					url: "/pages/mine/comment/comment"
 				});
 			}
 		}
@@ -192,5 +211,10 @@
 		font-size: 26rpx;
 		color: #333;
 		flex: 1;
+	}
+
+	.item-arrow {
+		font-size: 24rpx;
+		color: #999;
 	}
 </style>
