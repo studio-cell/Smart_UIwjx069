@@ -10,10 +10,11 @@ exports.main = async (event, context) => {
 		pageSize = 10
 	} = event;
 
-	if (!userId) {
+	// 参数校验
+	if (!userId || typeof userId !== 'string') {
 		return {
 			code: 400,
-			message: '缺少用户ID'
+			message: '缺少用户ID或参数格式错误'
 		};
 	}
 
@@ -29,7 +30,7 @@ exports.main = async (event, context) => {
 			.limit(pageSize)
 			.get();
 
-		if (collectionResult.data.length === 0) {
+		if (!collectionResult.data || collectionResult.data.length === 0) {
 			return {
 				code: 200,
 				message: '暂无收藏',
@@ -48,12 +49,17 @@ exports.main = async (event, context) => {
 			})
 			.get();
 
-		// 3. 关联收藏时间
+		// 3. 关联收藏时间，处理null数据
 		const collectList = collectionResult.data.map(collect => {
-			const news = newsResult.data.find(n => n._id === collect.newsId);
+			const news = newsResult.data.find(n => n._id === collect.newsId) || {};
 			return {
 				...collect,
-				newsInfo: news || null
+				newsInfo: {
+					title: news.title || '暂无标题',
+					cover: news.cover || '',
+					author: news.author || '未知作者',
+					time: news.time || ''
+				}
 			};
 		});
 
@@ -67,16 +73,16 @@ exports.main = async (event, context) => {
 			message: '查询成功',
 			data: {
 				list: collectList,
-				total: countResult.total,
-				page,
-				pageSize
+				total: countResult.total || 0,
+				page: parseInt(page),
+				pageSize: parseInt(pageSize)
 			}
 		};
 	} catch (error) {
 		console.error('收藏列表查询失败：', error);
 		return {
 			code: 500,
-			message: '查询失败',
+			message: '查询失败：' + error.message,
 			errMsg: error.message
 		};
 	}

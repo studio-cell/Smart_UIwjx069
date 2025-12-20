@@ -7,15 +7,23 @@
 		</view>
 		<!-- 收藏列表 -->
 		<view v-else class="collection-list">
+			<!-- 彻底修复：使用item作为循环变量，确保作用域正确 -->
 			<view class="collection-item" v-for="(item, index) in collectionList" :key="index"
 				@click="goToNewsDetail(item.newsId)">
-				<image :src="item.newsInfo.cover || '/static/default.png'" class="item-cover"></image>
-				<view class="item-content">
-					<text class="item-title">{{ item.newsInfo.title }}</text>
+
+				<!-- 多层判空 + 默认图兜底 -->
+				<image :src="item?.newsInfo?.cover || 'https://picsum.photos/120/100'" class="item-cover"
+					@error="handleCoverError(index)" v-if="item?.newsInfo">
+				</image>
+
+				<view class="item-content" v-if="item?.newsInfo">
+					<!-- 标题增加默认值 -->
+					<text class="item-title">{{ item.newsInfo.title || '暂无标题' }}</text>
 					<text class="item-time">收藏时间：{{ formatTime(item.collectTime) }}</text>
 				</view>
+
 				<!-- 取消收藏按钮 -->
-				<view class="delete-btn" @click.stop="cancelCollection(item._id)">
+				<view class="delete-btn" @click.stop="cancelCollection(item)" v-if="item">
 					<text>取消</text>
 				</view>
 			</view>
@@ -25,6 +33,7 @@
 
 <script>
 	export default {
+		name: "Collection",
 		data() {
 			return {
 				collectionList: [],
@@ -33,7 +42,7 @@
 		},
 		onLoad() {
 			// 获取登录用户ID
-			const user = uni.getStorageSync("userInfo");
+			const user = uni.getStorageSync("userInfo") || {};
 			if (user && user.userId) {
 				this.userId = user.userId;
 				this.getCollectionList();
@@ -48,6 +57,13 @@
 			}
 		},
 		methods: {
+			// 封面加载失败兜底
+			handleCoverError(index) {
+				if (this.collectionList[index] && this.collectionList[index].newsInfo) {
+					this.$set(this.collectionList[index].newsInfo, 'cover', 'https://picsum.photos/120/100');
+				}
+			},
+
 			// 获取收藏列表
 			async getCollectionList() {
 				uni.showLoading({
@@ -62,8 +78,11 @@
 							pageSize: 20
 						}
 					});
-					if (res.result.code === 200) {
-						this.collectionList = res.result.data.list;
+					if (res.result && res.result.code === 200) {
+						// 过滤掉无效数据
+						this.collectionList = res.result.data.list.filter(item => {
+							return item && item._id && item.newsId;
+						});
 					}
 				} catch (error) {
 					console.error("获取收藏失败：", error);
@@ -75,31 +94,56 @@
 					uni.hideLoading();
 				}
 			},
-			// 取消收藏
-			async cancelCollection(collectionId) {
+
+			// 取消收藏 - 完整修复版
+			async cancelCollection(item) {
+				// 参数校验
+				if (!item || !item._id || !item.newsId || !this.userId) {
+					uni.showToast({
+						title: "参数错误",
+						icon: "none"
+					});
+					return;
+				}
+
 				uni.showModal({
 					title: "提示",
 					content: "确定取消收藏吗？",
 					success: async (res) => {
 						if (res.confirm) {
+							uni.showLoading({
+								title: "取消中..."
+							});
 							try {
 								const res = await uniCloud.callFunction({
 									name: "collection-remove",
 									data: {
 										userId: this.userId,
-										collectionId: collectionId
+										newsId: item.newsId
 									}
 								});
-								if (res.result.code === 200) {
+
+								uni.hideLoading();
+
+								if (res.result && res.result.code === 200) {
 									uni.showToast({
-										title: "取消成功"
+										title: "取消成功",
+										icon: "success"
 									});
-									this.getCollectionList(); // 刷新列表
+									// 本地移除该条数据，避免重新请求
+									this.collectionList = this.collectionList.filter(col => col._id !==
+										item._id);
+								} else {
+									uni.showToast({
+										title: res.result?.message || "取消失败",
+										icon: "none"
+									});
 								}
 							} catch (error) {
+								uni.hideLoading();
 								console.error("取消收藏失败：", error);
 								uni.showToast({
-									title: "操作失败",
+									title: "操作异常",
 									icon: "none"
 								});
 							}
@@ -107,17 +151,31 @@
 					}
 				});
 			},
+
 			// 跳转到新闻详情
 			goToNewsDetail(newsId) {
+				// 增加newsId判空
+				if (!newsId) {
+					uni.showToast({
+						title: "新闻不存在",
+						icon: "none"
+					});
+					return;
+				}
 				uni.navigateTo({
-					url: `/pages/news/detail/detail?newsId=${newsId}`
+					url: `/pages/newsDetail/NewsDetail?newsId=${newsId}`
 				});
 			},
+
 			// 格式化时间
 			formatTime(time) {
-				if (!time) return "";
-				const date = new Date(time);
-				return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+				if (!time) return "未知时间";
+				try {
+					const date = new Date(time);
+					return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+				} catch (e) {
+					return "未知时间";
+				}
 			}
 		}
 	};
@@ -158,6 +216,7 @@
 		display: flex;
 		padding: 20rpx;
 		border-bottom: 1rpx solid #f5f5f5;
+		align-items: center;
 	}
 
 	.item-cover {
@@ -171,13 +230,15 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: center;
 	}
 
 	.item-title {
 		font-size: 26rpx;
 		color: #333;
 		line-height: 1.4;
+		margin-bottom: 8rpx;
+		display: block;
 	}
 
 	.item-time {
@@ -194,6 +255,5 @@
 		color: #d00;
 		border-radius: 20rpx;
 		font-size: 22rpx;
-		align-self: center;
 	}
 </style>

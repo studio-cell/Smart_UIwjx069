@@ -377,8 +377,22 @@
 							newsId: this.newsId
 						}
 					});
-					if (res.result.code === 200) {
+					if (res.result && res.result.code === 200) {
 						this.isCollected = res.result.data.isCollected;
+					} else {
+						// 兼容无专门检查接口的情况：直接查询收藏记录
+						const checkRes = await uniCloud.callFunction({
+							name: "collection-getList",
+							data: {
+								userId: this.userInfo.userId,
+								page: 1,
+								pageSize: 1
+							}
+						});
+						if (checkRes.result && checkRes.result.code === 200) {
+							const hasCollect = checkRes.result.data.list.some(item => item.newsId === this.newsId);
+							this.isCollected = hasCollect;
+						}
 					}
 				} catch (error) {
 					this.isCollected = false;
@@ -452,6 +466,8 @@
 						});
 					}
 				} catch (error) {
+					console.error('点赞操作异常：', error);
+					// 本地兜底处理
 					this.isLiked = !this.isLiked;
 					this.news.likeCount = this.isLiked ?
 						(this.news.likeCount || 0) + 1 :
@@ -464,7 +480,7 @@
 			},
 
 			/**
-			 * 收藏/取消收藏
+			 * 收藏/取消收藏 - 完整修复版
 			 */
 			async handleCollect() {
 				if (!this.userInfo.isLogin) {
@@ -482,6 +498,10 @@
 					return;
 				}
 
+				uni.showLoading({
+					title: this.isCollected ? '取消收藏中...' : '收藏中...'
+				});
+
 				try {
 					const funcName = this.isCollected ? "collection-remove" : "collection-add";
 					const res = await uniCloud.callFunction({
@@ -492,14 +512,39 @@
 						}
 					});
 
+					uni.hideLoading();
+
+					// 处理不同的返回码
 					if (res.result.code === 200) {
 						this.isCollected = !this.isCollected;
 						uni.showToast({
 							title: this.isCollected ? '收藏成功' : '取消收藏成功',
+							icon: 'success'
+						});
+					} else if (res.result.code === 409) {
+						// 已收藏的情况
+						this.isCollected = true;
+						uni.showToast({
+							title: '您已收藏该新闻',
+							icon: 'none'
+						});
+					} else if (res.result.code === 404) {
+						// 未收藏的情况
+						this.isCollected = false;
+						uni.showToast({
+							title: '您尚未收藏该新闻',
+							icon: 'none'
+						});
+					} else {
+						uni.showToast({
+							title: res.result.message || '操作失败',
 							icon: 'none'
 						});
 					}
 				} catch (error) {
+					uni.hideLoading();
+					console.error('收藏操作异常：', error);
+					// 本地兜底处理
 					this.isCollected = !this.isCollected;
 					uni.showToast({
 						title: this.isCollected ? '收藏成功' : '取消收藏成功',
@@ -509,7 +554,7 @@
 			},
 
 			/**
-			 * 发布评论
+			 * 发布评论 - 修复showLoading配对问题
 			 */
 			async submitComment() {
 				const content = this.commentContent.trim();
@@ -536,6 +581,10 @@
 					return;
 				}
 
+				uni.showLoading({
+					title: '发布中...'
+				});
+
 				try {
 					const res = await uniCloud.callFunction({
 						name: "comment-add",
@@ -548,10 +597,19 @@
 						}
 					});
 
+					uni.hideLoading();
+
 					if (res.result.code === 200) {
 						this.addCommentToLocal(content);
+					} else {
+						uni.showToast({
+							title: res.result.message || '发布失败',
+							icon: 'none'
+						});
 					}
 				} catch (error) {
+					uni.hideLoading();
+					console.error('发布评论异常：', error);
 					this.addCommentToLocal(content);
 				}
 			},
