@@ -180,6 +180,12 @@
 				"navigationBarBackgroundColor": "#fff",
 				"navigationBarTextStyle": "black"
 			}
+		},
+		{
+			"path": "pages/mine/collection/collection",
+			"style": {
+				"navigationBarTitleText": ""
+			}
 		}
 	],
 	"globalStyle": {
