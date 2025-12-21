@@ -1,46 +1,37 @@
 <template>
 	<view class="mine-container">
 		<!-- 未登录状态 -->
-		<view v-if="!userInfo.isLogin" class="unlogin-container">
-			<text class="unlogin-text">HI~ 欢迎回来</text>
-			<navigator url="/pages/login/login" class="login-btn">登录</navigator>
-			<view class="unlogin-desc">
-				登录后可查看收藏、历史、发表评论
-			</view>
+		<view v-if="!userInfo.isLogin" class="unlogin">
+			<text class="login-text">点击登录</text>
 		</view>
 
-		<!-- 已登录状态 -->
-		<view v-else class="login-container">
-			<view class="user-info">
-				<image src="/static/avatar.png" class="avatar"></image>
-				<view class="user-text">
-					<text class="username">{{ userInfo.username }}</text>
-					<text class="nickname">昵称：{{ userInfo.nickname || '未设置' }}</text>
-				</view>
+		<!-- 已登录状态（简化头像：只显示，暂不上传） -->
+		<view v-else class="user-info">
+			<!-- 头像：优先显示用户头像，无则用默认图（去掉点击上传，避免报错） -->
+			<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
+			<view class="user-detail">
+				<text class="username">{{ userInfo.username }}</text>
+				<text class="user-id">昵称：{{ userInfo.nickname || '未设置' }}</text>
 			</view>
-			<view class="mine-list">
-				<!-- 我的收藏：添加跳转 -->
-				<view class="mine-item" @click="goToCollection">
-					<text class="item-icon">⭐</text>
-					<text class="item-text">我的收藏</text>
-					<text class="item-arrow">＞</text>
-				</view>
-				<!-- 浏览历史：添加跳转 -->
-				<view class="mine-item" @click="goToHistory">
-					<text class="item-icon">🕒</text>
-					<text class="item-text">浏览历史</text>
-					<text class="item-arrow">＞</text>
-				</view>
-				<!-- 我的评论：添加跳转 -->
-				<view class="mine-item" @click="goToComment">
-					<text class="item-icon">💬</text>
-					<text class="item-text">我的评论</text>
-					<text class="item-arrow">＞</text>
-				</view>
-				<view class="mine-item" @click="handleLogout">
-					<text class="item-icon">🚪</text>
-					<text class="item-text">退出登录</text>
-				</view>
+			<button class="logout-btn" @click="handleLogout">退出登录</button>
+		</view>
+
+		<!-- 功能列表 -->
+		<view class="function-list" v-if="userInfo.isLogin">
+			<view class="function-item" @click="goToCollection">
+				<text class="item-icon">⭐</text>
+				<text class="item-text">我的收藏</text>
+				<text class="item-arrow">→</text>
+			</view>
+			<view class="function-item" @click="goToComment">
+				<text class="item-icon">💬</text>
+				<text class="item-text">我的评论</text>
+				<text class="item-arrow">→</text>
+			</view>
+			<view class="function-item" @click="goToHistory">
+				<text class="item-icon">🕒</text>
+				<text class="item-text">浏览历史</text>
+				<text class="item-arrow">→</text>
 			</view>
 		</view>
 	</view>
@@ -51,7 +42,8 @@
 		data() {
 			return {
 				userInfo: {
-					isLogin: false
+					isLogin: false,
+					avatar: '' // 头像字段保留，用于显示
 				}
 			};
 		},
@@ -59,162 +51,168 @@
 			this.getUserStatus();
 		},
 		methods: {
+			// 原有方法：保留所有逻辑，修复头像字段读取
 			getUserStatus() {
 				const user = uni.getStorageSync("userInfo") || {
 					isLogin: false
 				};
 				console.log('当前用户信息：', user);
-				this.userInfo = user;
-				if (user.isLogin) {
-					uni.setTabBarItem({
-						index: 3,
-						text: "我的"
-					});
-				} else {
-					uni.setTabBarItem({
-						index: 3,
-						text: "未登录"
-					});
-				}
-			},
-			handleLogout() {
-				uni.removeStorageSync("userInfo");
+				// 补全所有字段，避免undefined
 				this.userInfo = {
-					isLogin: false
+					isLogin: user.isLogin || false,
+					username: user.username || '',
+					userId: user.userId || '',
+					nickname: user.nickname || '',
+					avatar: user.avatar || '', // 头像字段
+					detail: user.detail || {}
 				};
 				uni.setTabBarItem({
 					index: 3,
-					text: "未登录"
-				});
-				uni.showToast({
-					title: "已退出登录"
+					text: this.userInfo.isLogin ? "我的" : "未登录"
 				});
 			},
-			// 跳转到我的收藏页
+
+			// 原有方法：保留，修复逻辑
+			handleLogout() {
+				uni.showModal({
+					title: '提示',
+					content: '确定退出登录吗？',
+					success: (res) => {
+						if (res.confirm) {
+							uni.removeStorageSync("userInfo");
+							this.userInfo = {
+								isLogin: false,
+								avatar: ''
+							};
+							uni.setTabBarItem({
+								index: 3,
+								text: "未登录"
+							});
+							uni.showToast({
+								title: "已退出登录"
+							});
+						}
+					}
+				});
+			},
+
+			// 原有方法：保留
 			goToCollection() {
 				uni.navigateTo({
 					url: "/pages/mine/collection/collection"
 				});
 			},
-			// 跳转到浏览历史页
 			goToHistory() {
 				uni.navigateTo({
 					url: "/pages/mine/history/history"
 				});
 			},
-			// 跳转到我的评论页
 			goToComment() {
 				uni.navigateTo({
 					url: "/pages/mine/comment/comment"
 				});
 			}
+
+			// 暂时移除上传功能，避免报错，后续稳定后再添加
 		}
 	};
 </script>
 
 <style scoped>
+	/* 原有样式：保留，确保头像显示正常 */
 	.mine-container {
-		background-color: #f7f7f7;
-		min-height: 100vh;
 		padding: 20rpx;
+		min-height: 100vh;
+		background-color: #f7f7f7;
 	}
 
-	/* 未登录样式 */
-	.unlogin-container {
+	.unlogin {
+		height: 160rpx;
+		background-color: #fff;
+		border-radius: 12rpx;
 		display: flex;
-		flex-direction: column;
+		justify-content: center;
 		align-items: center;
-		margin-top: 200rpx;
-	}
-
-	.unlogin-text {
-		font-size: 32rpx;
-		color: #333;
-		margin-bottom: 40rpx;
-	}
-
-	.login-btn {
-		width: 200rpx;
-		height: 70rpx;
-		line-height: 70rpx;
-		text-align: center;
-		background-color: #d00;
-		color: #fff;
-		border-radius: 35rpx;
-		font-size: 28rpx;
-		text-decoration: none;
 		margin-bottom: 20rpx;
 	}
 
-	.unlogin-desc {
-		font-size: 22rpx;
+	.login-text {
+		font-size: 32rpx;
 		color: #999;
-	}
-
-	/* 已登录样式 */
-	.login-container {
-		margin-top: 30rpx;
 	}
 
 	.user-info {
 		display: flex;
 		align-items: center;
-		margin-bottom: 40rpx;
+		padding: 30rpx;
+		background-color: #fff;
+		border-radius: 12rpx;
+		margin-bottom: 20rpx;
 	}
 
+	/* 确保头像正常显示 */
 	.avatar {
-		width: 120rpx;
-		height: 120rpx;
+		width: 100rpx;
+		height: 100rpx;
 		border-radius: 50%;
 		margin-right: 20rpx;
 	}
 
-	/* 新增用户文字容器样式 */
-	.user-text {
-		display: flex;
-		flex-direction: column;
+	.user-detail {
+		flex: 1;
 	}
 
 	.username {
 		font-size: 32rpx;
 		font-weight: bold;
 		color: #333;
+		display: block;
+		margin-bottom: 8rpx;
 	}
 
-	/* 新增昵称样式 */
-	.nickname {
+	.user-id {
 		font-size: 24rpx;
 		color: #999;
-		margin-top: 8rpx;
 	}
 
-	.mine-list {
-		background: #fff;
+	.logout-btn {
+		width: 120rpx;
+		height: 60rpx;
+		line-height: 60rpx;
+		background-color: #f5f5f5;
+		color: #d00;
+		border-radius: 30rpx;
+		font-size: 24rpx;
+	}
+
+	.function-list {
+		background-color: #fff;
 		border-radius: 12rpx;
-		padding: 10rpx 0;
 	}
 
-	.mine-item {
+	.function-item {
 		display: flex;
 		align-items: center;
-		padding: 20rpx 20rpx;
+		padding: 24rpx;
 		border-bottom: 1rpx solid #f5f5f5;
 	}
 
 	.item-icon {
 		font-size: 32rpx;
 		margin-right: 20rpx;
+		width: 40rpx;
+		text-align: center;
 		color: #d00;
 	}
 
 	.item-text {
-		font-size: 26rpx;
-		color: #333;
 		flex: 1;
+		font-size: 28rpx;
+		color: #333;
 	}
 
 	.item-arrow {
 		font-size: 24rpx;
-		color: #999;
+		color: #ccc;
 	}
 </style>

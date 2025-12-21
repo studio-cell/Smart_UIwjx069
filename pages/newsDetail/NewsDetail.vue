@@ -617,16 +617,28 @@
 			/**
 			 * 本地添加评论
 			 */
+			// 在新闻详情页的 submitComment 方法中，修改 addCommentToLocal 部分
 			addCommentToLocal(content) {
-				this.commentList.unshift({
+				const newComment = {
+					_id: 'local_' + Date.now(), // 本地ID，云端会自动生成
+					newsId: this.newsId,
+					userId: this.userInfo.userId,
 					username: this.userInfo.username || "游客",
+					newsTitle: this.news.title, // 新增：保存新闻标题
 					avatar: `https://picsum.photos/48/48?random=${Date.now()}`,
-					time: "刚刚",
+					time: new Date(), // 使用Date对象，方便格式化
 					content: content,
 					likeCount: 0,
 					isLiked: false
-				});
+				};
+				this.commentList.unshift(newComment);
 				this.commentContent = '';
+
+				// 同步更新到本地缓存（可选，用于无网络时显示）
+				let myComments = uni.getStorageSync('myComments_' + this.userInfo.userId) || [];
+				myComments.unshift(newComment);
+				uni.setStorageSync('myComments_' + this.userInfo.userId, myComments);
+
 				uni.showToast({
 					title: '评论发布成功',
 					icon: 'none'
