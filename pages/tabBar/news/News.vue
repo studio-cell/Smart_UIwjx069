@@ -65,7 +65,12 @@
 				<!-- 状态提示 -->
 				<view v-if="loadingMore" class="loading-tip">加载中...</view>
 				<view v-if="noMore && filteredNews.length > 0" class="no-more-tip">没有更多内容了</view>
-				<view v-if="filteredNews.length === 0 && !loadingMore" class="empty-tip">暂无该分类的新闻内容</view>
+				<!-- 替换为新的空数据提示 -->
+				<view v-if="filteredNews.length === 0 && !loadingMore" class="empty-container">
+					<image src="/static/empty.png" class="empty-img"></image>
+					<text class="empty-text">暂无{{ categories[currentTab] }}新闻~</text>
+					<button class="empty-btn" @click="getNewsList(true)">点击重试</button>
+				</view>
 			</view>
 		</scroll-view>
 	</view>
@@ -205,7 +210,7 @@
 					this.loadingMore = true;
 				}
 
-				// 模拟新闻数据
+				// 模拟新闻数据（可注释掉下面的mock数据，测试空数据提示效果）
 				const mockNewsList = [{
 						nid: 'n1001',
 						title: '2025央行降准0.5个百分点，释放长期资金约1万亿元',
@@ -559,11 +564,32 @@
 		padding: 20rpx 0;
 	}
 
-	.empty-tip {
+	/* 新增空数据提示样式 */
+	.empty-container {
 		text-align: center;
+		padding: 50rpx 0;
+	}
+
+	.empty-img {
+		width: 200rpx;
+		height: 200rpx;
+		margin-bottom: 20rpx;
+	}
+
+	.empty-text {
 		font-size: 28rpx;
 		color: #999;
-		margin-top: 100rpx;
+		margin-bottom: 20rpx;
+	}
+
+	.empty-btn {
+		width: 200rpx;
+		height: 60rpx;
+		line-height: 60rpx;
+		background: #f5f5f5;
+		color: #666;
+		font-size: 26rpx;
+		border-radius: 30rpx;
 	}
 
 	/* 广告搜索框样式 */
