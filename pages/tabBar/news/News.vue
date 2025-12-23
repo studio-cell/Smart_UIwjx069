@@ -29,11 +29,23 @@
 			</view>
 		</view>
 
-		<scroll-view v-if="categories.length > 0" scroll-y class="news-scroll" @scrolltoupper="onPullDownRefresh"
-			@scrolltolower="onReachBottom" refresher-enabled :refresher-threshold="100" ref="scrollRef"
-			:refresher-refreshing="isRefreshing">
+		<scroll-view v-if="categories.length > 0" scroll-y class="news-scroll" ref="scrollRef" :refresher-enabled="true"
+			:refresher-threshold="100" :refresher-refreshing="isRefreshing" @refresherrefresh="onRefresherRefresh"
+			@scrolltolower="onReachBottom">
+			<!-- 刷新更新提示 -->
 			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}条内容</view>
-			<view class="news-list">
+
+			<!-- 骨架屏 -->
+			<view v-if="loadingMore && newsList.length === 0" class="skeleton-list">
+				<view class="skeleton-item" v-for="i in 5" :key="i">
+					<view class="skeleton-img"></view>
+					<view class="skeleton-title"></view>
+					<view class="skeleton-desc"></view>
+				</view>
+			</view>
+
+			<!-- 新闻列表 -->
+			<view v-else class="news-list">
 				<view v-for="news in filteredNews" :key="news.nid || news._id"
 					@click="goToDetail(news.nid || news._id)">
 					<NewsView :nid="news.nid || news._id" :title="news.title" :is-top="news.isTop" :author="news.author"
@@ -49,6 +61,8 @@
 						</template>
 					</NewsView>
 				</view>
+
+				<!-- 状态提示 -->
 				<view v-if="loadingMore" class="loading-tip">加载中...</view>
 				<view v-if="noMore && filteredNews.length > 0" class="no-more-tip">没有更多内容了</view>
 				<view v-if="filteredNews.length === 0 && !loadingMore" class="empty-tip">暂无该分类的新闻内容</view>
@@ -73,13 +87,14 @@
 				currentTab: 0,
 				showUpdateTip: false,
 				updateCount: 0,
-				scrollRef: null,
 				isRefreshing: false,
 				weatherData: null,
 				page: 1,
 				pageSize: 10,
 				loadingMore: false,
-				noMore: false
+				noMore: false,
+				// 防抖标识
+				isTabChanging: false
 			};
 		},
 		computed: {
@@ -96,11 +111,18 @@
 			this.getNewsList();
 		},
 		methods: {
+			/**
+			 * 格式化时间戳为年月日格式
+			 */
 			formatTime(timestamp) {
 				if (!timestamp) return "";
 				const date = new Date(timestamp);
 				return `${date.getFullYear()}.${(date.getMonth()+1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
 			},
+
+			/**
+			 * 根据天气状况返回对应图标
+			 */
 			getWeatherIcon(cond) {
 				const iconMap = {
 					"晴": "☀️",
@@ -117,6 +139,10 @@
 				};
 				return iconMap[cond] || "🌤️";
 			},
+
+			/**
+			 * 获取天气数据（模拟）
+			 */
 			getWeather() {
 				const tomorrow = new Date();
 				tomorrow.setDate(tomorrow.getDate() + 1);
@@ -134,10 +160,22 @@
 					cond: "晴转多云"
 				};
 			},
+
+			/**
+			 * 获取新闻分类
+			 */
 			getNewsCategories() {
 				this.categories = ["推荐", "时政", "财经", "娱乐", "体育", "科技", "广告"];
 			},
+
+			/**
+			 * 获取新闻列表
+			 * @param {Boolean} isRefresh - 是否为刷新操作
+			 */
 			async getNewsList(isRefresh = false) {
+				// 防止重复请求
+				if ((isRefresh && this.isRefreshing) || (!isRefresh && this.loadingMore)) return;
+
 				if (isRefresh) {
 					this.page = 1;
 					this.noMore = false;
@@ -147,6 +185,7 @@
 					this.loadingMore = true;
 				}
 
+				// 模拟新闻数据
 				const mockNewsList = [{
 						nid: 'n1001',
 						title: '2025央行降准0.5个百分点，释放长期资金约1万亿元',
@@ -215,10 +254,12 @@
 					}
 				];
 
+				// 模拟接口请求延迟
 				setTimeout(() => {
 					if (isRefresh) {
 						this.newsList = mockNewsList;
 						this.updateCount = mockNewsList.length;
+						// 3秒后隐藏更新提示
 						setTimeout(() => this.showUpdateTip = false, 3000);
 					} else {
 						const moreNews = [{
@@ -237,17 +278,38 @@
 					}
 					this.isRefreshing = false;
 					this.loadingMore = false;
+					this.isTabChanging = false;
 				}, 1000);
 			},
+
+			/**
+			 * 处理标签切换
+			 */
 			handleTabClick(index) {
+				// 防抖处理：避免快速切换重复请求
+				if (this.isTabChanging || index === this.currentTab) return;
+
+				this.isTabChanging = true;
 				this.currentTab = index;
 				this.page = 1;
 				this.noMore = false;
 				this.getNewsList();
+
+				// 滚动到顶部
 				this.$nextTick(() => {
-					if (this.scrollRef) this.scrollRef.scrollTop = 0;
+					const scrollView = this.$refs.scrollRef;
+					if (scrollView) {
+						scrollView.scrollTo({
+							scrollTop: 0,
+							duration: 300
+						});
+					}
 				});
 			},
+
+			/**
+			 * 跳转到新闻详情页
+			 */
 			goToDetail(nid) {
 				const news = this.newsList.find(item => (item.nid || item._id) === nid);
 				if (news && news.category === '广告') {
@@ -267,10 +329,17 @@
 					}
 				});
 			},
-			onPullDownRefresh() {
+
+			/**
+			 * scroll-view 下拉刷新
+			 */
+			onRefresherRefresh() {
 				this.getNewsList(true);
-				setTimeout(() => uni.stopPullDownRefresh(), 1500);
 			},
+
+			/**
+			 * 上拉加载更多
+			 */
 			onReachBottom() {
 				if (!this.noMore && !this.loadingMore && !this.isRefreshing) {
 					this.page += 1;
@@ -406,12 +475,62 @@
 		}
 	}
 
+	/* 骨架屏样式 */
+	.skeleton-list {
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+	}
+
+	.skeleton-item {
+		display: flex;
+		gap: 15rpx;
+		padding: 10rpx;
+	}
+
+	.skeleton-img {
+		width: 120rpx;
+		height: 120rpx;
+		background: #eee;
+		border-radius: 8rpx;
+		animation: flash 1s infinite alternate;
+	}
+
+	.skeleton-title {
+		flex: 1;
+		height: 30rpx;
+		background: #eee;
+		border-radius: 4rpx;
+		animation: flash 1s infinite alternate;
+	}
+
+	.skeleton-desc {
+		flex: 1;
+		height: 20rpx;
+		background: #eee;
+		margin-top: 10rpx;
+		border-radius: 4rpx;
+		animation: flash 1s infinite alternate;
+	}
+
+	@keyframes flash {
+		from {
+			opacity: 0.5;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	/* 新闻列表样式 */
 	.news-list {
 		display: flex;
 		flex-direction: column;
 		gap: 20rpx;
 	}
 
+	/* 提示文本样式 */
 	.loading-tip,
 	.no-more-tip {
 		text-align: center;
@@ -425,5 +544,22 @@
 		font-size: 28rpx;
 		color: #999;
 		margin-top: 100rpx;
+	}
+
+	/* 广告搜索框样式 */
+	.search-box {
+		padding: 10rpx;
+		margin-top: 10rpx;
+	}
+
+	.search-label {
+		font-size: 22rpx;
+		color: #666;
+	}
+
+	.search-tag {
+		font-size: 20rpx;
+		color: #999;
+		margin-left: 10rpx;
 	}
 </style>
