@@ -1,13 +1,12 @@
 <template>
 	<view class="mine-container">
 		<!-- 未登录状态 -->
-		<view v-if="!userInfo.isLogin" class="unlogin">
+		<view v-if="!userInfo.isLogin" class="unlogin" @click="goToLogin">
 			<text class="login-text">点击登录</text>
 		</view>
 
 		<!-- 已登录状态（简化头像：只显示，暂不上传） -->
 		<view v-else class="user-info">
-			<!-- 头像：优先显示用户头像，无则用默认图（去掉点击上传，避免报错） -->
 			<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
 			<view class="user-detail">
 				<text class="username">{{ userInfo.username }}</text>
@@ -51,7 +50,7 @@
 			this.getUserStatus();
 		},
 		methods: {
-			// 原有方法：保留所有逻辑，修复头像字段读取
+			// 获取用户登录状态
 			getUserStatus() {
 				const user = uni.getStorageSync("userInfo") || {
 					isLogin: false
@@ -63,7 +62,7 @@
 					username: user.username || '',
 					userId: user.userId || '',
 					nickname: user.nickname || '',
-					avatar: user.avatar || '', // 头像字段
+					avatar: user.avatar || '',
 					detail: user.detail || {}
 				};
 				uni.setTabBarItem({
@@ -72,7 +71,7 @@
 				});
 			},
 
-			// 原有方法：保留，修复逻辑
+			// 退出登录
 			handleLogout() {
 				uni.showModal({
 					title: '提示',
@@ -96,30 +95,38 @@
 				});
 			},
 
-			// 原有方法：保留
+			// 跳转我的收藏
 			goToCollection() {
 				uni.navigateTo({
 					url: "/pages/mine/collection/collection"
 				});
 			},
+
+			// 跳转浏览历史
 			goToHistory() {
 				uni.navigateTo({
 					url: "/pages/mine/history/history"
 				});
 			},
+
+			// 跳转我的评论
 			goToComment() {
 				uni.navigateTo({
 					url: "/pages/mine/comment/comment"
 				});
-			}
+			},
 
-			// 暂时移除上传功能，避免报错，后续稳定后再添加
+			// 跳转登录页
+			goToLogin() {
+				uni.navigateTo({
+					url: '/pages/login/login'
+				});
+			}
 		}
 	};
 </script>
 
 <style scoped>
-	/* 原有样式：保留，确保头像显示正常 */
 	.mine-container {
 		padding: 20rpx;
 		min-height: 100vh;
@@ -150,7 +157,6 @@
 		margin-bottom: 20rpx;
 	}
 
-	/* 确保头像正常显示 */
 	.avatar {
 		width: 100rpx;
 		height: 100rpx;

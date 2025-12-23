@@ -47,21 +47,30 @@
 							// 3. 保存登录状态（保留你原有复杂状态存储逻辑）
 							uni.setStorageSync('userInfo', {
 								isLogin: true,
-								username: res.result.account.username,
-								userId: res.result.account.user_id,
+								username: res.result.account.username, // 用户名
+								userId: res.result.account.user_id, // 用户ID
+								nickname: res.result.account.nickname || res.result.account
+									.username, // 补全昵称字段（mine.vue要读取）
+								avatar: res.result.account.avatar || '', // 补全头像字段（mine.vue要读取）
 								detail: res.result.userInfo
 							});
 
 							// 4. 登录成功提示 + TabBar切换 + 跳转（保留原有逻辑）
+							// 登录成功后的跳转（原setTimeout可能导致切换不及时）
 							uni.showToast({
 								title: '登录成功',
-								icon: 'success' // 新增成功图标，优化体验
+								icon: 'success'
 							});
+							// 立即更新TabBar，再跳转
+							uni.setTabBarItem({
+								index: 3,
+								text: '我的'
+							});
+							// 延迟跳转确保TabBar更新完成
 							setTimeout(() => {
-								uni.setTabBarItem({
-									index: 3,
-									text: '我的'
-								});
+								uni.switchTab({
+									url: '/pages/tabBar/mine/Mine'
+								}); // 跳转到「我的」页面，而非新闻页
 							}, 500);
 							uni.switchTab({
 								url: '/pages/tabBar/news/News'

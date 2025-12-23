@@ -1,55 +1,55 @@
-// 云函数：userLogin（适配阿里云服务空间）
+// cloudfunctions/userLogin/index.js
 exports.main = async (event, context) => {
 	const db = uniCloud.database();
-	const {
-		username,
-		password
-	} = event;
+	const userCollection = db.collection('User'); // 你的用户集合名
 
 	try {
-		// 1. 查询账户是否存在
-		const accountRes = await db.collection('Accounts')
-			.where({
-				username,
-				password
-			})
-			.get();
+		const {
+			username,
+			password
+		} = event;
 
-		if (accountRes.data.length === 0) {
+		// 1. 校验参数
+		if (!username || !password) {
 			return {
-				code: 401,
-				message: "账号或密码错误"
+				code: 400,
+				message: '用户名/密码不能为空'
 			};
 		}
 
-		const account = accountRes.data[0];
+		// 2. 查询用户
+		const userRes = await userCollection.where({
+			username: username,
+			password: password // 注意：正式环境要加密，这里仅测试
+		}).get();
 
-		// 2. 更新最后登录时间（修复：替换db.serverDate()为new Date()）
-		await db.collection('Accounts')
-			.doc(account._id)
-			.update({
-				last_login_time: new Date() // 适配阿里云
-			});
+		// 3. 验证用户是否存在
+		if (userRes.data.length === 0) {
+			return {
+				code: 401,
+				message: '用户名或密码错误'
+			};
+		}
 
-		// 3. 查询关联的用户信息
-		const userRes = await db.collection('UserInfo')
-			.doc(account.user_id)
-			.get();
-
+		// 4. 返回用户信息（和前端存储的字段匹配）
+		const user = userRes.data[0];
 		return {
 			code: 200,
-			message: "登录成功",
+			message: '登录成功',
 			account: {
-				username: account.username,
-				user_id: account.user_id
+				username: user.username,
+				user_id: user._id, // 用户ID用数据库的_id
+				nickname: user.nickname || '',
+				avatar: user.avatar || ''
 			},
-			userInfo: userRes.data[0]
+			userInfo: user
 		};
-	} catch (err) {
+	} catch (error) {
+		console.error('登录失败：', error);
 		return {
 			code: 500,
-			message: "登录失败",
-			errMsg: err.message
+			message: '服务器错误',
+			error: error.message
 		};
 	}
 };
