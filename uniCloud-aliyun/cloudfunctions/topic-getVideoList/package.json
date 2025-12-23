@@ -1,0 +1,7 @@
+{
+  "name": "topic-getVideoList",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

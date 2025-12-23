@@ -1,12 +1,9 @@
 <template>
 	<view class="news-container">
-		<!-- 分类标签栏 -->
 		<TabBanner :list="categories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
-		<!-- 紧凑版天气卡片 -->
 		<view class="weather-wrapper">
 			<view v-if="weatherData" class="weather-card">
-				<!-- 左侧：核心天气信息 -->
 				<view class="weather-left">
 					<text class="weather-icon">{{ getWeatherIcon(weatherData.cond) }}</text>
 					<view class="temp-group">
@@ -16,8 +13,6 @@
 					</view>
 					<text class="weather-cond">{{ weatherData.cond }}</text>
 				</view>
-
-				<!-- 右侧：辅助信息 -->
 				<view class="weather-right">
 					<view class="weather-item">
 						<text class="item-label">日期</text>
@@ -34,16 +29,18 @@
 			</view>
 		</view>
 
-		<!-- 新闻列表滚动区域 -->
 		<scroll-view v-if="categories.length > 0" scroll-y class="news-scroll" @scrolltoupper="onPullDownRefresh"
-			refresher-enabled :refresher-threshold="100" ref="scrollRef">
+			@scrolltolower="onReachBottom" refresher-enabled :refresher-threshold="100" ref="scrollRef"
+			:refresher-refreshing="isRefreshing">
 			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}条内容</view>
 			<view class="news-list">
-				<view v-for="news in filteredNews" :key="news.nid" @click="goToDetail(news.nid)">
-					<NewsView :nid="news.nid" :title="news.title" :is-top="news.isTop" :author="news.author"
-						:comments="news.comments" :time="news.time" :mode="news.category === '广告' ? 3 : 2"
-						:images="[news.cover]" :bgColor="news.category === '广告' ? '#f9f9f9' : '#fff'"
-						:summary="news.summary" :showSearch="news.category === '广告'">
+				<view v-for="news in filteredNews" :key="news.nid || news._id"
+					@click="goToDetail(news.nid || news._id)">
+					<NewsView :nid="news.nid || news._id" :title="news.title" :is-top="news.isTop" :author="news.author"
+						:comments="news.comments" :time="news.time || formatTime(news.createTime)"
+						:mode="news.category === '广告' ? 3 : 2" :images="[news.cover]"
+						:bgColor="news.category === '广告' ? '#f9f9f9' : '#fff'" :summary="news.summary"
+						:showSearch="news.category === '广告'">
 						<template v-slot:tips v-if="news.category === '广告'">
 							<view class="search-box">
 								<text class="search-label">广告说明：</text>
@@ -52,7 +49,9 @@
 						</template>
 					</NewsView>
 				</view>
-				<view v-if="filteredNews.length === 0" class="empty-tip">暂无该分类的新闻内容</view>
+				<view v-if="loadingMore" class="loading-tip">加载中...</view>
+				<view v-if="noMore && filteredNews.length > 0" class="no-more-tip">没有更多内容了</view>
+				<view v-if="filteredNews.length === 0 && !loadingMore" class="empty-tip">暂无该分类的新闻内容</view>
 			</view>
 		</scroll-view>
 	</view>
@@ -61,7 +60,6 @@
 <script>
 	import TabBanner from "@/components/TabBanner.vue";
 	import NewsView from "@/components/NewsView.vue";
-	import newsData from "@/Data/news.json";
 
 	export default {
 		components: {
@@ -70,19 +68,23 @@
 		},
 		data() {
 			return {
-				categories: newsData.categories,
-				newsList: newsData.newsList,
+				categories: [],
+				newsList: [],
 				currentTab: 0,
 				showUpdateTip: false,
 				updateCount: 0,
 				scrollRef: null,
 				isRefreshing: false,
-				weatherData: null
+				weatherData: null,
+				page: 1,
+				pageSize: 10,
+				loadingMore: false,
+				noMore: false
 			};
 		},
 		computed: {
 			filteredNews() {
-				const category = this.categories[this.currentTab];
+				const category = this.categories[this.currentTab] || "推荐";
 				if (category === "推荐") return this.newsList.filter(n => n.category !== '广告');
 				if (category === "广告") return this.newsList.filter(n => n.category === '广告');
 				return this.newsList.filter(n => n.category === category && n.category !== '广告');
@@ -90,9 +92,15 @@
 		},
 		onLoad() {
 			this.getWeather();
+			this.getNewsCategories();
+			this.getNewsList();
 		},
 		methods: {
-			// 根据天气状况返回对应图标
+			formatTime(timestamp) {
+				if (!timestamp) return "";
+				const date = new Date(timestamp);
+				return `${date.getFullYear()}.${(date.getMonth()+1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')}`;
+			},
 			getWeatherIcon(cond) {
 				const iconMap = {
 					"晴": "☀️",
@@ -109,21 +117,15 @@
 				};
 				return iconMap[cond] || "🌤️";
 			},
-
 			getWeather() {
-				// 计算明天日期
 				const tomorrow = new Date();
 				tomorrow.setDate(tomorrow.getDate() + 1);
 				const year = tomorrow.getFullYear();
 				const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
 				const day = String(tomorrow.getDate()).padStart(2, '0');
 				const dateStr = `${year}-${month}-${day}`;
-
-				// 星期数组
 				const weekArr = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 				const weekStr = weekArr[tomorrow.getDay()];
-
-				// 模拟天气数据
 				this.weatherData = {
 					date: dateStr,
 					week: weekStr,
@@ -132,16 +134,72 @@
 					cond: "晴转多云"
 				};
 			},
+			getNewsCategories() {
+				this.categories = ["推荐", "时政", "财经", "娱乐", "体育", "科技", "广告"];
+			},
+			async getNewsList(isRefresh = false) {
+				if (isRefresh) {
+					this.page = 1;
+					this.noMore = false;
+					this.isRefreshing = true;
+				} else {
+					this.loadingMore = true;
+				}
 
+				try {
+					const category = this.categories[this.currentTab] || "推荐";
+					const res = await uniCloud.callFunction({
+						name: 'news-getList',
+						data: {
+							category: category === "推荐" ? "" : category,
+							page: this.page,
+							pageSize: this.pageSize,
+							isAd: category === "广告" ? true : null
+						}
+					});
+
+					if (res.result.code === 200) {
+						const {
+							list,
+							total
+						} = res.result.data;
+						if (isRefresh) {
+							this.newsList = list;
+							this.updateCount = list.length;
+							this.showUpdateTip = true;
+							setTimeout(() => this.showUpdateTip = false, 3000);
+						} else {
+							this.newsList = [...this.newsList, ...list];
+						}
+						this.noMore = this.newsList.length >= total;
+					} else {
+						uni.showToast({
+							title: res.result.message || '加载失败',
+							icon: 'none'
+						});
+					}
+				} catch (error) {
+					console.error('获取新闻失败：', error);
+					uni.showToast({
+						title: '网络异常，加载失败',
+						icon: 'none'
+					});
+				} finally {
+					this.isRefreshing = false;
+					this.loadingMore = false;
+				}
+			},
 			handleTabClick(index) {
 				this.currentTab = index;
+				this.page = 1;
+				this.noMore = false;
+				this.getNewsList();
 				this.$nextTick(() => {
 					if (this.scrollRef) this.scrollRef.scrollTop = 0;
 				});
 			},
-
 			goToDetail(nid) {
-				const news = this.newsList.find(item => item.nid === nid);
+				const news = this.newsList.find(item => (item.nid || item._id) === nid);
 				if (news && news.category === '广告') {
 					uni.showToast({
 						title: "广告内容暂无法查看详情",
@@ -149,11 +207,8 @@
 					});
 					return;
 				}
-				// 修改：跳转时直接传递完整的新闻数据，而非仅传递ID
 				uni.navigateTo({
 					url: `/pages/newsDetail/NewsDetail?nid=${nid}`,
-					// 新增：传递完整新闻数据
-					events: {},
 					success: (res) => {
 						res.eventChannel.emit('transferNewsData', {
 							news: news,
@@ -162,54 +217,15 @@
 					}
 				});
 			},
-
 			onPullDownRefresh() {
-				if (this.isRefreshing) return;
-				this.isRefreshing = true;
-				setTimeout(() => {
-					const newNews = [{
-						nid: `new-${Date.now()}-1`,
-						title: "最新：央行降准0.5个百分点，释放长期资金约1万亿元",
-						cover: "https://picsum.photos/200/160",
-						summary: "央行今日宣布降准，支持实体经济发展，市场流动性将进一步宽松",
-						content: `
-							中国人民银行今日发布公告，决定于2025年10月26日下调金融机构存款准备金率0.5个百分点（不含已执行5%存款准备金率的金融机构）。本次降准共计释放长期资金约1万亿元，主要用于支持实体经济发展，降低企业融资成本。
-							央行表示，此次降准是为了优化金融机构资金结构，增加金融机构长期稳定资金来源，增强金融机构资金配置能力，加大对实体经济的支持力度。降准后，金融机构加权平均存款准备金率约为7.4%。
-							业内专家分析，本次降准将有效缓解银行体系流动性压力，推动贷款利率进一步下行，对房地产、小微企业等重点领域形成有力支持。预计后续还将有配套政策出台，共同促进经济平稳运行。
-						`,
-						author: "金融时报",
-						time: "2025.10.26",
-						comments: 328,
-						isTop: false,
-						category: "财经",
-						likeCount: 1256
-					}, {
-						nid: `new-${Date.now()}-2`,
-						title: "我国成功发射遥感四十号卫星，用于国土普查等任务",
-						cover: "https://picsum.photos/200/160",
-						summary: "长征二号丁运载火箭在酒泉卫星发射中心成功将遥感四十号卫星送入预定轨道",
-						content: `
-							2025年10月26日11时22分，我国在酒泉卫星发射中心使用长征二号丁运载火箭，成功将遥感四十号卫星发射升空，卫星顺利进入预定轨道，发射任务获得圆满成功。
-							遥感四十号卫星主要用于开展国土普查、城市规划、土地确权、路网设计、农作物估产和防灾减灾等领域的应用。此次任务是长征系列运载火箭的第526次飞行。
-							据航天科技集团介绍，遥感四十号卫星采用了新型高精度成像技术，分辨率达到亚米级，能够为各行业提供更精准的地理信息数据。该卫星的成功发射，将进一步提升我国遥感卫星应用水平，为经济社会发展提供有力支撑。
-						`,
-						author: "人民日报",
-						time: "2025.10.26",
-						comments: 512,
-						isTop: true,
-						category: "时政",
-						likeCount: 2890
-					}];
-					this.newsList = [...newNews, ...this.newsList];
-					this.updateCount = newNews.length;
-					this.showUpdateTip = true;
-					this.$nextTick(() => uni.stopPullDownRefresh());
-					setTimeout(() => this.showUpdateTip = false, 3000);
-					uni.showTabBarRedDot({
-						index: 0
-					});
-					this.isRefreshing = false;
-				}, 1500);
+				this.getNewsList(true);
+				setTimeout(() => uni.stopPullDownRefresh(), 1500);
+			},
+			onReachBottom() {
+				if (!this.noMore && !this.loadingMore && !this.isRefreshing) {
+					this.page += 1;
+					this.getNewsList();
+				}
 			}
 		},
 		onHide() {
@@ -229,26 +245,21 @@
 		min-height: 100vh;
 	}
 
-	/* 天气卡片 - 紧凑版 */
 	.weather-wrapper {
 		padding: 0 20rpx 16rpx;
-		/* 减少底部内边距 */
 	}
 
 	.weather-card {
 		background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 		border-radius: 12rpx;
 		padding: 16rpx 20rpx;
-		/* 大幅减少内边距 */
 		color: #fff;
 		box-shadow: 0 4rpx 12rpx rgba(79, 172, 254, 0.15);
 		display: flex;
-		/* 横向布局，节省高度 */
 		align-items: center;
 		justify-content: space-between;
 	}
 
-	/* 左侧核心信息 */
 	.weather-left {
 		display: flex;
 		align-items: center;
@@ -257,7 +268,6 @@
 
 	.weather-icon {
 		font-size: 36rpx;
-		/* 缩小图标 */
 	}
 
 	.temp-group {
@@ -267,7 +277,6 @@
 
 	.temp-high {
 		font-size: 32rpx;
-		/* 大幅缩小温度字体 */
 		font-weight: bold;
 		line-height: 1;
 	}
@@ -280,21 +289,17 @@
 
 	.temp-low {
 		font-size: 20rpx;
-		/* 缩小低温字体 */
 		opacity: 0.8;
 	}
 
 	.weather-cond {
 		font-size: 20rpx;
-		/* 缩小天气状况字体 */
 		margin-left: 8rpx;
 	}
 
-	/* 右侧辅助信息 */
 	.weather-right {
 		display: flex;
 		gap: 20rpx;
-		/* 横向排列，节省高度 */
 	}
 
 	.weather-item {
@@ -304,22 +309,18 @@
 	.item-label {
 		display: block;
 		font-size: 16rpx;
-		/* 缩小标签字体 */
 		opacity: 0.7;
 		margin-bottom: 2rpx;
 	}
 
 	.item-value {
 		font-size: 18rpx;
-		/* 缩小数值字体 */
 		font-weight: 500;
 	}
 
-	/* 加载状态 */
 	.weather-loading {
 		text-align: center;
 		padding: 16rpx 0;
-		/* 减少加载状态高度 */
 	}
 
 	.loading-text {
@@ -327,10 +328,8 @@
 		color: #999;
 	}
 
-	/* 新闻滚动区域 - 恢复更多高度 */
 	.news-scroll {
 		height: calc(100vh - 120rpx - 100rpx);
-		/* 天气卡片高度大幅降低 */
 		padding: 0 20rpx 20rpx;
 	}
 
@@ -361,6 +360,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: 20rpx;
+	}
+
+	.loading-tip,
+	.no-more-tip {
+		text-align: center;
+		font-size: 24rpx;
+		color: #999;
+		padding: 20rpx 0;
 	}
 
 	.empty-tip {

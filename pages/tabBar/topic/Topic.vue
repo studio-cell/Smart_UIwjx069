@@ -1,47 +1,55 @@
 <template>
 	<view class="topic-container">
-		<!-- 顶部分类导航（复用TabBanner组件） -->
 		<TabBanner :list="topicCategories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
-		<!-- 下拉刷新容器 -->
 		<scroll-view scroll-y class="topic-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
 			:refresher-threshold="100">
-			<!-- 数据更新提醒 -->
-			<view v-if="showUpdateTip" class="update-tip">
-				为您更新了{{ updateCount }}个热门话题
-			</view>
+			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}个热门话题</view>
 
-			<!-- 话题列表 -->
 			<view class="topic-list">
 				<view class="topic-card" v-for="(topic, index) in filteredTopics" :key="topic.tid"
-					@click="goToTopicDetail(topic.tid)">
-					<!-- 话题标签 -->
+					@click="loadTopicVideos(topic)">
 					<view class="topic-tag" :style="{ backgroundColor: tagColorList[index % tagColorList.length] }">
 						{{ topic.tag }}
 					</view>
-					<!-- 话题标题 -->
 					<view class="topic-title">{{ topic.title }}</view>
-					<!-- 话题数据统计 -->
 					<view class="topic-stats">
 						<text class="stat-item">🔥 {{ topic.hotValue }}热度</text>
 						<text class="stat-item">💬 {{ topic.commentCount }}条评论</text>
 						<text class="stat-item">❤️ {{ topic.likeCount }}人关注</text>
 					</view>
-					<!-- 话题最后更新时间 -->
 					<view class="topic-time">最后更新：{{ topic.updateTime }}</view>
 				</view>
 			</view>
 
-			<!-- 空数据提示 -->
-			<view v-if="filteredTopics.length === 0" class="empty-tip">
-				暂无该分类的话题内容
+			<view v-if="currentTopic" class="topic-video-section">
+				<view class="section-title">
+					{{ currentTopic.title }} · 相关视频
+					<text class="video-count">({{ topicVideos.length }}个)</text>
+				</view>
+				<view class="video-list">
+					<view class="video-card" v-for="video in topicVideos" :key="video.vid" @click="playVideo(video)">
+						<image class="video-cover" :src="video.cover" mode="aspectFill"></image>
+						<view class="video-meta">
+							<text class="duration">{{ video.duration }}</text>
+							<text class="play-count">{{ video.playCount }}次播放</text>
+						</view>
+						<view class="video-title">{{ video.title }}</view>
+					</view>
+				</view>
 			</view>
+
+			<view v-if="filteredTopics.length === 0 && !loadingMore" class="empty-tip">暂无该分类的话题内容</view>
 		</scroll-view>
+
+		<view v-if="showPlayer" class="video-player-mask" @click="closePlayer">
+			<video class="video-player" :src="currentVideo.url" :controls="true" :autoplay="true"
+				@ended="closePlayer"></video>
+		</view>
 	</view>
 </template>
 
 <script>
-	// 复用TabBanner组件（和新闻/视频页保持一致）
 	import TabBanner from "@/components/TabBanner.vue";
 
 	export default {
@@ -50,9 +58,7 @@
 		},
 		data() {
 			return {
-				// 话题分类
 				topicCategories: ['推荐', '时政', '财经', '娱乐', '体育', '科技', '民生'],
-				// 话题列表数据（模拟真实业务结构）
 				topicList: [{
 						tid: 't1001',
 						title: '2025央行降准对普通人有哪些影响？',
@@ -61,7 +67,8 @@
 						commentCount: 12580,
 						likeCount: 86500,
 						updateTime: '2025-10-26 18:30',
-						category: '财经'
+						category: '财经',
+						topicId: 'topic_finance_001'
 					},
 					{
 						tid: 't1002',
@@ -71,7 +78,8 @@
 						commentCount: 28960,
 						likeCount: 198700,
 						updateTime: '2025-10-26 20:15',
-						category: '体育'
+						category: '体育',
+						topicId: 'topic_sports_001'
 					},
 					{
 						tid: 't1003',
@@ -81,7 +89,8 @@
 						commentCount: 35680,
 						likeCount: 156300,
 						updateTime: '2025-10-26 19:40',
-						category: '科技'
+						category: '科技',
+						topicId: 'topic_tech_001'
 					},
 					{
 						tid: 't1004',
@@ -91,7 +100,8 @@
 						commentCount: 42580,
 						likeCount: 289500,
 						updateTime: '2025-10-26 17:20',
-						category: '时政'
+						category: '时政',
+						topicId: 'topic_politics_001'
 					},
 					{
 						tid: 't1005',
@@ -101,7 +111,8 @@
 						commentCount: 89650,
 						likeCount: 458200,
 						updateTime: '2025-10-26 21:05',
-						category: '娱乐'
+						category: '娱乐',
+						topicId: 'topic_ent_001'
 					},
 					{
 						tid: 't1006',
@@ -111,18 +122,22 @@
 						commentCount: 18560,
 						likeCount: 96800,
 						updateTime: '2025-10-26 16:45',
-						category: '民生'
+						category: '民生',
+						topicId: 'topic_life_001'
 					}
 				],
-				currentTab: 0, // 当前选中分类下标
-				showUpdateTip: false, // 更新提醒显示状态
-				updateCount: 0, // 更新的话题数量
-				// 话题标签颜色列表（循环使用）
-				tagColorList: ['#e53935', '#1e88e5', '#43a047', '#f57c00', '#8e24aa', '#00acc1']
+				currentTab: 0,
+				showUpdateTip: false,
+				updateCount: 0,
+				tagColorList: ['#e53935', '#1e88e5', '#43a047', '#f57c00', '#8e24aa', '#00acc1'],
+				currentTopic: null,
+				topicVideos: [],
+				loadingMore: false,
+				showPlayer: false,
+				currentVideo: {}
 			};
 		},
 		computed: {
-			// 根据分类过滤话题列表
 			filteredTopics() {
 				const category = this.topicCategories[this.currentTab];
 				return category === "推荐" ?
@@ -131,21 +146,53 @@
 			}
 		},
 		methods: {
-			// 切换话题分类
 			handleTabClick(index) {
 				this.currentTab = index;
 			},
-			// 跳转到话题详情页
-			goToTopicDetail(tid) {
-				uni.navigateTo({
-					url: `/pages/topicDetail/TopicDetail?tid=${tid}`
-				});
+			async loadTopicVideos(topic) {
+				this.currentTopic = topic;
+				this.loadingMore = true;
+
+				try {
+					const res = await uniCloud.callFunction({
+						name: 'topic-getVideoList',
+						data: {
+							topicId: topic.topicId,
+							page: 1,
+							pageSize: 10
+						}
+					});
+
+					if (res.result.code === 200) {
+						this.topicVideos = res.result.data.list;
+					} else {
+						uni.showToast({
+							title: res.result.message,
+							icon: 'none'
+						});
+					}
+				} catch (error) {
+					console.error('获取话题视频失败：', error);
+					uni.showToast({
+						title: '加载失败',
+						icon: 'none'
+					});
+				} finally {
+					this.loadingMore = false;
+				}
 			},
-			// 下拉刷新加载新话题
+			playVideo(video) {
+				this.currentVideo = video;
+				this.showPlayer = true;
+				uni.hideTabBar();
+			},
+			closePlayer() {
+				this.showPlayer = false;
+				this.currentVideo = {};
+				uni.showTabBar();
+			},
 			onPullDownRefresh() {
-				// 模拟请求新话题数据
 				setTimeout(() => {
-					// 新增2个热门话题
 					const newTopics = [{
 							tid: `t_new_${Date.now()}_1`,
 							title: "新能源汽车购置税减免政策延长，买车更划算？",
@@ -154,7 +201,8 @@
 							commentCount: 9850,
 							likeCount: 76300,
 							updateTime: '2025-10-26 22:10',
-							category: "财经"
+							category: "财经",
+							topicId: 'topic_finance_002'
 						},
 						{
 							tid: `t_new_${Date.now()}_2`,
@@ -164,32 +212,24 @@
 							commentCount: 25680,
 							likeCount: 168900,
 							updateTime: '2025-10-26 22:05',
-							category: "科技"
+							category: "科技",
+							topicId: 'topic_tech_002'
 						}
 					];
-
-					// 更新话题列表（新增数据在前）
 					this.topicList = [...newTopics, ...this.topicList];
 					this.updateCount = newTopics.length;
 					this.showUpdateTip = true;
-
-					// 停止下拉刷新动画
 					uni.stopPullDownRefresh();
-
-					// 3秒后隐藏更新提醒
 					setTimeout(() => {
 						this.showUpdateTip = false;
 					}, 3000);
-
-					// 显示TabBar红点提示
 					uni.showTabBarRedDot({
 						index: 2
-					}); // 话题Tab（第3项）显示红点
+					});
 				}, 1500);
 			}
 		},
 		onHide() {
-			// 页面隐藏时隐藏TabBar红点
 			uni.hideTabBarRedDot({
 				index: 2
 			});
@@ -208,7 +248,6 @@
 		padding: 20rpx;
 	}
 
-	/* 更新提醒样式（和新闻/视频页保持一致） */
 	.update-tip {
 		background-color: #d00;
 		color: #fff;
@@ -232,14 +271,12 @@
 		}
 	}
 
-	/* 话题列表样式 */
 	.topic-list {
 		display: flex;
 		flex-direction: column;
 		gap: 20rpx;
 	}
 
-	/* 话题卡片样式 */
 	.topic-card {
 		background-color: #fff;
 		border-radius: 12rpx;
@@ -247,7 +284,6 @@
 		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 	}
 
-	/* 话题标签 */
 	.topic-tag {
 		display: inline-block;
 		padding: 6rpx 12rpx;
@@ -257,7 +293,6 @@
 		margin-bottom: 15rpx;
 	}
 
-	/* 话题标题 */
 	.topic-title {
 		font-size: 30rpx;
 		color: #333;
@@ -266,7 +301,6 @@
 		margin-bottom: 15rpx;
 	}
 
-	/* 话题数据统计 */
 	.topic-stats {
 		display: flex;
 		justify-content: space-between;
@@ -281,18 +315,94 @@
 		margin-bottom: 5rpx;
 	}
 
-	/* 话题更新时间 */
 	.topic-time {
 		font-size: 20rpx;
 		color: #999;
 		text-align: right;
 	}
 
-	/* 空数据提示 */
+	.topic-video-section {
+		margin-top: 30rpx;
+		padding: 0 10rpx;
+	}
+
+	.section-title {
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #333;
+		margin-bottom: 20rpx;
+	}
+
+	.video-count {
+		font-size: 24rpx;
+		color: #999;
+		font-weight: normal;
+		margin-left: 10rpx;
+	}
+
+	.video-list {
+		display: flex;
+		flex-direction: column;
+		gap: 15rpx;
+	}
+
+	.video-card {
+		background-color: #fff;
+		border-radius: 12rpx;
+		overflow: hidden;
+	}
+
+	.video-cover {
+		width: 100%;
+		height: 200rpx;
+	}
+
+	.video-meta {
+		position: relative;
+		top: -30rpx;
+		padding: 0 15rpx;
+		display: flex;
+		justify-content: space-between;
+	}
+
+	.duration,
+	.play-count {
+		background-color: rgba(0, 0, 0, 0.7);
+		color: #fff;
+		font-size: 18rpx;
+		padding: 2rpx 6rpx;
+		border-radius: 4rpx;
+	}
+
+	.video-title {
+		font-size: 24rpx;
+		color: #333;
+		padding: 0 15rpx 15rpx;
+	}
+
 	.empty-tip {
 		text-align: center;
 		font-size: 28rpx;
 		color: #999;
 		margin-top: 100rpx;
+	}
+
+	.video-player-mask {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.9);
+		z-index: 9999;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.video-player {
+		width: 90%;
+		height: 500rpx;
+		border-radius: 12rpx;
 	}
 </style>

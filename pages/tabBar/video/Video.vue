@@ -1,45 +1,42 @@
 <template>
 	<view class="video-container">
-		<!-- 顶部分类导航（和新闻页TabBanner组件复用） -->
 		<TabBanner :list="videoCategories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
-		<!-- 下拉刷新容器 -->
 		<scroll-view scroll-y class="video-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
 			:refresher-threshold="100">
-			<!-- 数据更新提醒（3秒后自动消失） -->
-			<view v-if="showUpdateTip" class="update-tip">
-				为您更新了{{ updateCount }}条视频内容
-			</view>
+			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}条视频内容</view>
 
-			<!-- 视频列表 -->
 			<view class="video-list">
 				<view class="video-card" v-for="(video, index) in filteredVideos" :key="video.vid"
 					@click="playVideo(video)">
-					<!-- 视频封面 -->
 					<image class="video-cover" :src="video.cover" mode="aspectFill"></image>
-					<!-- 播放时长/播放量 -->
 					<view class="video-meta">
 						<text class="duration">{{ video.duration }}</text>
 						<text class="play-count">{{ video.playCount }}次播放</text>
 					</view>
-					<!-- 视频标题 -->
 					<view class="video-title">{{ video.title }}</view>
-					<!-- 作者信息 -->
 					<view class="video-author">
 						<image class="author-avatar" :src="video.authorAvatar || '/static/avatar_default.png'"
 							mode="circle"></image>
 						<text class="author-name">{{ video.author }}</text>
 					</view>
+					<view class="video-actions" @click.stop>
+						<view class="action-item" @click="toggleLike(video)">
+							<text class="action-icon" :style="{ color: video.isLiked ? '#d00' : '#999' }">❤️</text>
+							<text class="action-text">{{ video.likeCount || 0 }}</text>
+						</view>
+						<view class="action-item" @click="toggleCollect(video)">
+							<text class="action-icon"
+								:style="{ color: video.isCollected ? '#ff9500' : '#999' }">⭐</text>
+							<text class="action-text">{{ video.collectCount || 0 }}</text>
+						</view>
+					</view>
 				</view>
 			</view>
 
-			<!-- 空数据提示 -->
-			<view v-if="filteredVideos.length === 0" class="empty-tip">
-				暂无该分类的视频内容
-			</view>
+			<view v-if="filteredVideos.length === 0" class="empty-tip">暂无该分类的视频内容</view>
 		</scroll-view>
 
-		<!-- 视频播放弹窗（点击视频后显示） -->
 		<view v-if="showPlayer" class="video-player-mask" @click="closePlayer">
 			<video class="video-player" :src="currentVideo.url" :controls="true" :autoplay="true"
 				@ended="closePlayer"></video>
@@ -48,7 +45,6 @@
 </template>
 
 <script>
-	// 复用新闻页的TabBanner组件
 	import TabBanner from "@/components/TabBanner.vue";
 
 	export default {
@@ -57,9 +53,7 @@
 		},
 		data() {
 			return {
-				// 视频分类（和新闻分类结构一致）
 				videoCategories: ['推荐', '时政', '财经', '娱乐', '体育', '科技'],
-				// 视频列表数据（模拟真实业务数据结构）
 				videoList: [{
 						vid: 'v1001',
 						title: '央行降准政策解读：对实体经济有哪些影响？',
@@ -69,7 +63,11 @@
 						playCount: '12.5万',
 						author: '财经观察室',
 						authorAvatar: '/static/avatar/finance.png',
-						category: '财经'
+						category: '财经',
+						likeCount: 1256,
+						collectCount: 890,
+						isLiked: false,
+						isCollected: false
 					},
 					{
 						vid: 'v1002',
@@ -80,7 +78,11 @@
 						playCount: '89.8万',
 						author: '体育前线',
 						authorAvatar: '/static/avatar/sports.png',
-						category: '体育'
+						category: '体育',
+						likeCount: 8950,
+						collectCount: 5620,
+						isLiked: false,
+						isCollected: false
 					},
 					{
 						vid: 'v1003',
@@ -91,7 +93,11 @@
 						playCount: '56.3万',
 						author: '科技前沿',
 						authorAvatar: '/static/avatar/tech.png',
-						category: '科技'
+						category: '科技',
+						likeCount: 3580,
+						collectCount: 2150,
+						isLiked: false,
+						isCollected: false
 					},
 					{
 						vid: 'v1004',
@@ -102,7 +108,11 @@
 						playCount: '78.2万',
 						author: '时政新闻',
 						authorAvatar: '/static/avatar/politics.png',
-						category: '时政'
+						category: '时政',
+						likeCount: 6890,
+						collectCount: 4210,
+						isLiked: false,
+						isCollected: false
 					},
 					{
 						vid: 'v1005',
@@ -113,18 +123,21 @@
 						playCount: '102.4万',
 						author: '娱乐星探',
 						authorAvatar: '/static/avatar/ent.png',
-						category: '娱乐'
+						category: '娱乐',
+						likeCount: 9870,
+						collectCount: 6540,
+						isLiked: false,
+						isCollected: false
 					}
 				],
-				currentTab: 0, // 当前选中的分类下标
-				showUpdateTip: false, // 是否显示更新提醒
-				updateCount: 0, // 更新的视频数量
-				showPlayer: false, // 是否显示视频播放器
-				currentVideo: {} // 当前播放的视频信息
+				currentTab: 0,
+				showUpdateTip: false,
+				updateCount: 0,
+				showPlayer: false,
+				currentVideo: {}
 			};
 		},
 		computed: {
-			// 根据选中的分类过滤视频列表
 			filteredVideos() {
 				const category = this.videoCategories[this.currentTab];
 				return category === "推荐" ?
@@ -133,29 +146,21 @@
 			}
 		},
 		methods: {
-			// 切换分类
 			handleTabClick(index) {
 				this.currentTab = index;
 			},
-			// 播放视频（弹出播放弹窗）
 			playVideo(video) {
 				this.currentVideo = video;
 				this.showPlayer = true;
-				// 隐藏TabBar，提升播放体验
 				uni.hideTabBar();
 			},
-			// 关闭视频播放器
 			closePlayer() {
 				this.showPlayer = false;
 				this.currentVideo = {};
-				// 显示TabBar
 				uni.showTabBar();
 			},
-			// 下拉刷新加载新视频
 			onPullDownRefresh() {
-				// 模拟请求新视频数据（实际项目对接后端接口）
 				setTimeout(() => {
-					// 模拟新增2条视频（拼接到数组前面）
 					const newVideos = [{
 							vid: `v_new_${Date.now()}_1`,
 							title: "最新：新能源汽车补贴政策调整解读",
@@ -165,7 +170,11 @@
 							playCount: "8.2万",
 							author: "财经观察室",
 							authorAvatar: "/static/avatar/finance.png",
-							category: "财经"
+							category: "财经",
+							likeCount: 1200,
+							collectCount: 850,
+							isLiked: false,
+							isCollected: false
 						},
 						{
 							vid: `v_new_${Date.now()}_2`,
@@ -176,36 +185,108 @@
 							playCount: "32.7万",
 							author: "科技前沿",
 							authorAvatar: "/static/avatar/tech.png",
-							category: "科技"
+							category: "科技",
+							likeCount: 2800,
+							collectCount: 1500,
+							isLiked: false,
+							isCollected: false
 						}
 					];
-
-					// 更新视频列表（新增数据在前）
 					this.videoList = [...newVideos, ...this.videoList];
 					this.updateCount = newVideos.length;
-					this.showUpdateTip = true; // 显示更新提醒
-
-					// 停止下拉刷新动画
+					this.showUpdateTip = true;
 					uni.stopPullDownRefresh();
-
-					// 3秒后隐藏更新提醒
 					setTimeout(() => {
 						this.showUpdateTip = false;
 					}, 3000);
-
-					// 显示TabBar红点提示
 					uni.showTabBarRedDot({
 						index: 1
-					}); // 视频Tab（第2项）显示红点
+					});
 				}, 1500);
+			},
+			async toggleLike(video) {
+				const userId = uni.getStorageSync('userInfo').userId;
+				if (!userId) {
+					uni.showToast({
+						title: '请先登录',
+						icon: 'none'
+					});
+					uni.navigateTo({
+						url: '/pages/login/login'
+					});
+					return;
+				}
+
+				try {
+					const res = await uniCloud.callFunction({
+						name: 'video-like',
+						data: {
+							videoId: video.vid,
+							userId,
+							isCancel: video.isLiked
+						}
+					});
+
+					if (res.result.code === 200) {
+						const idx = this.videoList.findIndex(v => v.vid === video.vid);
+						if (idx > -1) {
+							this.videoList[idx].isLiked = !video.isLiked;
+							this.videoList[idx].likeCount = video.isLiked ? Math.max(0, video.likeCount - 1) : (video
+								.likeCount || 0) + 1;
+						}
+					}
+				} catch (error) {
+					console.error('点赞失败：', error);
+					uni.showToast({
+						title: '操作失败',
+						icon: 'none'
+					});
+				}
+			},
+			async toggleCollect(video) {
+				const userId = uni.getStorageSync('userInfo').userId;
+				if (!userId) {
+					uni.showToast({
+						title: '请先登录',
+						icon: 'none'
+					});
+					uni.navigateTo({
+						url: '/pages/login/login'
+					});
+					return;
+				}
+
+				try {
+					const res = await uniCloud.callFunction({
+						name: 'video-collect',
+						data: {
+							videoId: video.vid,
+							userId,
+							isCancel: video.isCollected
+						}
+					});
+
+					if (res.result.code === 200) {
+						const idx = this.videoList.findIndex(v => v.vid === video.vid);
+						if (idx > -1) {
+							this.videoList[idx].isCollected = !video.isCollected;
+							this.videoList[idx].collectCount = video.isCollected ? Math.max(0, video.collectCount -
+								1) : (video.collectCount || 0) + 1;
+						}
+					}
+				} catch (error) {
+					console.error('收藏失败：', error);
+					uni.showToast({
+						title: '操作失败',
+						icon: 'none'
+					});
+				}
 			}
 		},
 		onHide() {
-			// 页面隐藏时，隐藏TabBar红点
 			uni.hideTabBarRedDot({
 				index: 1
 			});
-			// 关闭视频播放器
 			this.closePlayer();
 		}
 	};
@@ -222,7 +303,6 @@
 		padding: 20rpx;
 	}
 
-	/* 数据更新提醒样式（和新闻页保持一致） */
 	.update-tip {
 		background-color: #d00;
 		color: #fff;
@@ -246,14 +326,12 @@
 		}
 	}
 
-	/* 视频列表样式 */
 	.video-list {
 		display: flex;
 		flex-direction: column;
 		gap: 20rpx;
 	}
 
-	/* 视频卡片样式 */
 	.video-card {
 		background-color: #fff;
 		border-radius: 12rpx;
@@ -261,13 +339,11 @@
 		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 	}
 
-	/* 视频封面 */
 	.video-cover {
 		width: 100%;
 		height: 300rpx;
 	}
 
-	/* 视频元信息（时长/播放量） */
 	.video-meta {
 		position: relative;
 		top: -40rpx;
@@ -276,14 +352,7 @@
 		justify-content: space-between;
 	}
 
-	.duration {
-		background-color: rgba(0, 0, 0, 0.7);
-		color: #fff;
-		font-size: 20rpx;
-		padding: 4rpx 8rpx;
-		border-radius: 4rpx;
-	}
-
+	.duration,
 	.play-count {
 		background-color: rgba(0, 0, 0, 0.7);
 		color: #fff;
@@ -292,7 +361,6 @@
 		border-radius: 4rpx;
 	}
 
-	/* 视频标题 */
 	.video-title {
 		font-size: 28rpx;
 		color: #333;
@@ -301,11 +369,10 @@
 		line-height: 1.4;
 	}
 
-	/* 作者信息 */
 	.video-author {
 		display: flex;
 		align-items: center;
-		padding: 0 15rpx 15rpx;
+		padding: 0 15rpx 10rpx;
 	}
 
 	.author-avatar {
@@ -320,7 +387,28 @@
 		color: #999;
 	}
 
-	/* 空数据提示 */
+	.video-actions {
+		display: flex;
+		justify-content: flex-end;
+		padding: 10rpx 15rpx 15rpx;
+		gap: 30rpx;
+	}
+
+	.action-item {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+	}
+
+	.action-icon {
+		font-size: 24rpx;
+	}
+
+	.action-text {
+		font-size: 22rpx;
+		color: #666;
+	}
+
 	.empty-tip {
 		text-align: center;
 		font-size: 28rpx;
@@ -328,7 +416,6 @@
 		margin-top: 100rpx;
 	}
 
-	/* 视频播放弹窗遮罩 */
 	.video-player-mask {
 		position: fixed;
 		top: 0;
@@ -342,7 +429,6 @@
 		align-items: center;
 	}
 
-	/* 视频播放器 */
 	.video-player {
 		width: 90%;
 		height: 500rpx;
