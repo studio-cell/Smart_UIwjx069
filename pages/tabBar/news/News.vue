@@ -142,52 +142,102 @@
 					this.page = 1;
 					this.noMore = false;
 					this.isRefreshing = true;
+					this.showUpdateTip = true;
 				} else {
 					this.loadingMore = true;
 				}
 
-				try {
-					const category = this.categories[this.currentTab] || "推荐";
-					const res = await uniCloud.callFunction({
-						name: 'news-getList',
-						data: {
-							category: category === "推荐" ? "" : category,
-							page: this.page,
-							pageSize: this.pageSize,
-							isAd: category === "广告" ? true : null
-						}
-					});
-
-					if (res.result.code === 200) {
-						const {
-							list,
-							total
-						} = res.result.data;
-						if (isRefresh) {
-							this.newsList = list;
-							this.updateCount = list.length;
-							this.showUpdateTip = true;
-							setTimeout(() => this.showUpdateTip = false, 3000);
-						} else {
-							this.newsList = [...this.newsList, ...list];
-						}
-						this.noMore = this.newsList.length >= total;
-					} else {
-						uni.showToast({
-							title: res.result.message || '加载失败',
-							icon: 'none'
-						});
+				const mockNewsList = [{
+						nid: 'n1001',
+						title: '2025央行降准0.5个百分点，释放长期资金约1万亿元',
+						author: '财经时报',
+						comments: 1256,
+						time: '2025-10-26 15:30',
+						category: '财经',
+						cover: 'https://picsum.photos/400/200?random=1',
+						summary: '央行今日宣布降准，旨在支持实体经济发展，降低企业融资成本...',
+						isTop: true
+					},
+					{
+						nid: 'n1002',
+						title: '2025亚运会中国队斩获第100枚金牌，创历史新高',
+						author: '体育周报',
+						comments: 8950,
+						time: '2025-10-26 18:15',
+						category: '体育',
+						cover: '/static/news/sports1.jpg',
+						summary: '在刚刚结束的亚运会比赛中，中国队在跳水项目再夺一金，金牌总数突破100枚...',
+						isTop: false
+					},
+					{
+						nid: 'n1003',
+						title: '人工智能大模型迎来重大突破，可自主完成复杂任务',
+						author: '科技前沿',
+						comments: 3580,
+						time: '2025-10-26 16:40',
+						category: '科技',
+						cover: 'https://picsum.photos/400/200?random=3',
+						summary: '国内科技企业发布新一代AI大模型，具备自主学习和决策能力，应用场景覆盖多个领域...',
+						isTop: false
+					},
+					{
+						nid: 'n1004',
+						title: '2025全国两会重点关注民生问题，多领域政策将调整',
+						author: '时政新闻',
+						comments: 6890,
+						time: '2025-10-26 14:20',
+						category: '时政',
+						cover: 'https://picsum.photos/400/200?random=4',
+						summary: '全国两会即将召开，教育、医疗、养老等民生议题成为关注焦点...',
+						isTop: true
+					},
+					{
+						nid: 'n1005',
+						title: '热门电影票房突破50亿，成年度票房冠军',
+						author: '娱乐星探',
+						comments: 9870,
+						time: '2025-10-26 19:05',
+						category: '娱乐',
+						cover: 'https://picsum.photos/400/200?random=5',
+						summary: '某国产电影上映10天票房突破50亿，刷新多项票房纪录...',
+						isTop: false
+					},
+					{
+						nid: 'ad1001',
+						title: '【广告】新款智能手机限时特惠，立减800元',
+						author: '品牌官方',
+						comments: 0,
+						time: '2025-10-26 00:00',
+						category: '广告',
+						cover: 'https://picsum.photos/400/200?random=6',
+						summary: '新款旗舰手机搭载最新处理器，限时优惠活动进行中...',
+						isTop: false
 					}
-				} catch (error) {
-					console.error('获取新闻失败：', error);
-					uni.showToast({
-						title: '网络异常，加载失败',
-						icon: 'none'
-					});
-				} finally {
+				];
+
+				setTimeout(() => {
+					if (isRefresh) {
+						this.newsList = mockNewsList;
+						this.updateCount = mockNewsList.length;
+						setTimeout(() => this.showUpdateTip = false, 3000);
+					} else {
+						const moreNews = [{
+							nid: `n_new_${Date.now()}`,
+							title: '新能源汽车补贴政策调整，购车可享更多优惠',
+							author: '汽车之家',
+							comments: 1200,
+							time: new Date().toLocaleString(),
+							category: '财经',
+							cover: 'https://picsum.photos/400/200?random=7',
+							summary: '最新新能源汽车补贴政策出台，续航超600km车型补贴提高...',
+							isTop: false
+						}];
+						this.newsList = [...this.newsList, ...moreNews];
+						this.noMore = true;
+					}
 					this.isRefreshing = false;
 					this.loadingMore = false;
-				}
+				}, 1000);
 			},
 			handleTabClick(index) {
 				this.currentTab = index;
