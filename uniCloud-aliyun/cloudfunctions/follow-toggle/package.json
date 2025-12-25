@@ -1,0 +1,7 @@
+{
+  "name": "follow-toggle",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
