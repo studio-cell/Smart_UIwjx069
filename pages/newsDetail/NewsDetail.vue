@@ -27,8 +27,9 @@
 		<!-- 底部操作栏 -->
 		<view class="news-footer">
 			<view class="footer-btn" @click="handleCollect">
-				<text class="iconfont">★</text>
-				<text class="btn-text">收藏</text>
+				<!-- 动态显示收藏图标状态 -->
+				<text class="iconfont" :class="{ collected: isCollected }">★</text>
+				<text class="btn-text">{{ isCollected ? '已收藏' : '收藏' }}</text>
 			</view>
 			<view class="footer-btn" @click="handleShare">
 				<text class="iconfont">♡</text>
@@ -49,7 +50,8 @@
 				news: {}, // 新闻详情数据
 				newsList: [], // 新闻列表数据（用于返回列表时保持状态）
 				isFollowed: false, // 是否关注该作者
-				authorId: '' // 新闻作者ID（从新闻数据中获取）
+				authorId: '', // 新闻作者ID（从新闻数据中获取）
+				isCollected: false // 是否收藏该新闻（新增）
 			};
 		},
 		onLoad(options) {
@@ -62,7 +64,9 @@
 				this.authorId = this.news.author;
 				// 修复：模拟环境下跳过云函数查询，默认未关注
 				this.isFollowed = false;
-				console.log('从列表页获取新闻数据：', this.news);
+				// 初始化收藏状态（新增）
+				this.initCollectStatus();
+				console.log('从列表页获取新闻数据：', JSON.parse(JSON.stringify(this.news)));
 			});
 
 			// 仅当无列表页数据、且有nid参数时，才尝试从本地获取（避免模拟环境报错）
@@ -72,6 +76,8 @@
 				if (mockNews) {
 					this.news = mockNews;
 					this.authorId = mockNews.author;
+					// 初始化收藏状态（新增）
+					this.initCollectStatus();
 				} else {
 					uni.showToast({
 						title: '暂无该新闻数据',
@@ -83,6 +89,15 @@
 			}
 		},
 		methods: {
+			/**
+			 * 初始化收藏状态（新增）
+			 */
+			initCollectStatus() {
+				if (!this.news.nid) return;
+				const collectedNews = uni.getStorageSync('collectedNews') || [];
+				this.isCollected = collectedNews.includes(this.news.nid);
+			},
+
 			/**
 			 * 查询作者关注状态（模拟环境下注释云函数调用）
 			 */
@@ -198,10 +213,9 @@
 			},
 
 			/**
-			 * 收藏新闻
+			 * 收藏新闻（替换为你提供的版本，新增状态更新）
 			 */
 			handleCollect() {
-				// 收藏逻辑（可结合关注状态，已登录才能收藏）
 				const userInfo = uni.getStorageSync('userInfo');
 				if (!userInfo?.isLogin) {
 					uni.showToast({
@@ -210,10 +224,25 @@
 					});
 					return;
 				}
-				uni.showToast({
-					title: '收藏成功',
-					icon: 'success'
-				});
+				// 模拟收藏：本地存储记录已收藏的新闻ID
+				let collectedNews = uni.getStorageSync('collectedNews') || [];
+				const isCollected = collectedNews.includes(this.news.nid);
+				if (isCollected) {
+					collectedNews = collectedNews.filter(id => id !== this.news.nid);
+					this.isCollected = false; // 更新本地状态
+					uni.showToast({
+						title: '取消收藏成功',
+						icon: 'success'
+					});
+				} else {
+					collectedNews.push(this.news.nid);
+					this.isCollected = true; // 更新本地状态
+					uni.showToast({
+						title: '收藏成功',
+						icon: 'success'
+					});
+				}
+				uni.setStorageSync('collectedNews', collectedNews);
 			},
 
 			/**
@@ -223,7 +252,7 @@
 				// 模拟环境下仅提示，后续对接真实分享功能再启用
 				uni.showToast({
 					title: `分享《${this.news.title}》成功`,
-					icon: 'success'
+					icon: 'success'  
 				});
 				// 真实环境分享代码（注释）
 				// uni.share({
@@ -341,6 +370,11 @@
 		font-size: 32rpx;
 		margin-bottom: 6rpx;
 		color: #666;
+	}
+
+	/* 新增收藏状态样式 */
+	.iconfont.collected {
+		color: #ff9900;
 	}
 
 	.btn-text {
