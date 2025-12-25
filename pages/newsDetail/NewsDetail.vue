@@ -53,58 +53,61 @@
 			};
 		},
 		onLoad(options) {
-			// 接收从列表页传递的新闻数据
+			// 接收从列表页传递的新闻数据（优先使用）
 			const eventChannel = this.getOpenerEventChannel();
 			eventChannel.on('transferNewsData', (data) => {
 				this.news = data.news || {};
 				this.newsList = data.newsList || [];
-				// 获取作者ID（假设新闻数据中包含authorId字段，若无则用author名称作为标识）
-				this.authorId = this.news.authorId || this.news.author;
-
-				// 加载完成后查询关注状态
-				this.checkFollowStatus();
+				// 修复：模拟数据无authorId，直接用author作为标识
+				this.authorId = this.news.author;
+				// 修复：模拟环境下跳过云函数查询，默认未关注
+				this.isFollowed = false;
+				console.log('从列表页获取新闻数据：', this.news);
 			});
 
-			// 如果是从分享/刷新进入，从参数获取nid并请求详情
-			if (options.nid) {
-				this.getNewsDetail(options.nid);
+			// 仅当无列表页数据、且有nid参数时，才尝试从本地获取（避免模拟环境报错）
+			if (options.nid && !Object.keys(this.news).length) {
+				// 模拟环境下，直接从本地newsList找数据，不调用云函数
+				const mockNews = this.newsList.find(item => item.nid === options.nid);
+				if (mockNews) {
+					this.news = mockNews;
+					this.authorId = mockNews.author;
+				} else {
+					uni.showToast({
+						title: '暂无该新闻数据',
+						icon: 'none'
+					});
+				}
+				// 注释掉云函数调用，避免报错
+				// this.getNewsDetail(options.nid);
 			}
 		},
 		methods: {
 			/**
-			 * 查询作者关注状态
+			 * 查询作者关注状态（模拟环境下注释云函数调用）
 			 */
 			async checkFollowStatus() {
+				// 模拟环境下跳过云函数查询
 				const userInfo = uni.getStorageSync('userInfo');
-				// 未登录/无作者ID时不查询
 				if (!userInfo?.isLogin || !this.authorId) return;
-
-				try {
-					// 调用云函数查询关注状态
-					const res = await uniCloud.callFunction({
-						name: 'follow-check',
-						data: {
-							userId: userInfo.userId, // 当前登录用户ID
-							authorId: this.authorId // 新闻作者ID
-						}
-					});
-					// 回显关注状态
-					this.isFollowed = res.result?.data?.isFollowed || false;
-				} catch (error) {
-					console.error('查询关注状态失败：', error);
-					uni.showToast({
-						title: '查询关注状态失败',
-						icon: 'none'
-					});
-				}
+				// 注释云函数调用，默认未关注
+				// try {
+				//   const res = await uniCloud.callFunction({
+				//     name: 'follow-check',
+				//     data: { userId: userInfo.userId, authorId: this.authorId }
+				//   });
+				//   this.isFollowed = res.result?.data?.isFollowed || false;
+				// } catch (error) {
+				//   console.error('查询关注状态失败：', error);
+				// }
 			},
 
 			/**
-			 * 点击关注/取消关注
+			 * 点击关注/取消关注（精准匹配你提供的版本）
 			 */
 			async handleFollow() {
 				const userInfo = uni.getStorageSync('userInfo');
-				// 未登录则跳转到登录页
+				// 未登录拦截
 				if (!userInfo?.isLogin) {
 					uni.showToast({
 						title: '请先登录',
@@ -116,7 +119,7 @@
 					return;
 				}
 
-				// 无作者ID时提示
+				// 无作者ID提示
 				if (!this.authorId) {
 					uni.showToast({
 						title: '作者信息异常',
@@ -125,71 +128,73 @@
 					return;
 				}
 
-				try {
-					// 调用关注/取消关注云函数
-					const res = await uniCloud.callFunction({
-						name: 'follow-toggle',
-						data: {
-							userId: userInfo.userId,
-							authorId: this.authorId,
-							isFollowed: !this.isFollowed // 切换关注状态
-						}
-					});
+				// 模拟环境：仅更新本地状态，不调用云函数
+				this.isFollowed = !this.isFollowed;
+				uni.showToast({
+					title: this.isFollowed ? '关注成功' : '取消关注成功',
+					icon: 'success'
+				});
 
-					if (res.result?.code === 200) {
-						this.isFollowed = !this.isFollowed; // 本地更新状态
-						uni.showToast({
-							title: this.isFollowed ? '关注成功' : '取消关注成功',
-							icon: 'success'
-						});
-					} else {
-						uni.showToast({
-							title: res.result?.msg || '操作失败',
-							icon: 'none'
-						});
-					}
-				} catch (error) {
-					console.error('关注操作失败：', error);
-					uni.showToast({
-						title: '网络异常，操作失败',
-						icon: 'none'
-					});
-				}
+				// 真实环境的云函数调用（后续启用）
+				// try {
+				//   const res = await uniCloud.callFunction({
+				//     name: 'follow-toggle',
+				//     data: {
+				//       userId: userInfo.userId,
+				//       authorId: this.authorId,
+				//       isFollowed: !this.isFollowed
+				//     }
+				//   });
+				//   if (res.result?.code === 200) {
+				//     this.isFollowed = !this.isFollowed;
+				//     uni.showToast({
+				//       title: this.isFollowed ? '关注成功' : '取消关注成功',
+				//       icon: 'success'
+				//     });
+				//   } else {
+				//     uni.showToast({ title: res.result?.msg || '操作失败', icon: 'none' });
+				//   }
+				// } catch (error) {
+				//   console.error('关注操作失败：', error);
+				//   uni.showToast({ title: '网络异常，操作失败', icon: 'none' });
+				// }
 			},
 
 			/**
-			 * 获取新闻详情（备用：从接口获取）
+			 * 获取新闻详情（模拟环境下注释云函数调用）
 			 */
 			async getNewsDetail(nid) {
-				try {
-					const res = await uniCloud.callFunction({
-						name: 'news-detail',
-						data: {
-							nid
-						}
-					});
-					if (res.result?.code === 200) {
-						this.news = res.result.data;
-						this.authorId = this.news.authorId || this.news.author;
-						this.checkFollowStatus(); // 重新查询关注状态
-					}
-				} catch (error) {
-					console.error('获取新闻详情失败：', error);
-					uni.showToast({
-						title: '获取新闻详情失败',
-						icon: 'none'
-					});
-				}
+				// 模拟环境下注释，后续对接真实云数据库再启用
+				// try {
+				//   const res = await uniCloud.callFunction({
+				//     name: 'news-detail',
+				//     data: { nid }
+				//   });
+				//   if (res.result?.code === 200) {
+				//     this.news = res.result.data;
+				//     this.authorId = this.news.authorId || this.news.author;
+				//     this.checkFollowStatus();
+				//   }
+				// } catch (error) {
+				//   console.error('获取新闻详情失败：', error);
+				//   uni.showToast({ title: '获取新闻详情失败', icon: 'none' });
+				// }
 			},
 
 			/**
-			 * 跳转到作者主页
+			 * 跳转到作者主页（模拟环境下仅提示，无实际跳转）
 			 */
 			goToAuthorHome() {
 				if (!this.authorId) return;
-				uni.navigateTo({
-					url: `/pages/author/Author?authorId=${this.authorId}&authorName=${this.news.author}`
+				// 模拟环境下仅提示，后续对接作者主页再启用跳转
+				uni.showToast({
+					title: `进入${this.news.author}的主页`,
+					icon: 'none'
 				});
+				// 真实环境跳转代码（注释）
+				// uni.navigateTo({
+				//   url: `/pages/author/Author?authorId=${this.authorId}&authorName=${this.news.author}`
+				// });
 			},
 
 			/**
@@ -212,22 +217,34 @@
 			},
 
 			/**
-			 * 分享新闻
+			 * 分享新闻（模拟环境下仅提示）
 			 */
 			handleShare() {
-				uni.share({
-					title: this.news.title,
-					path: `/pages/newsDetail/NewsDetail?nid=${this.news.nid}`
+				// 模拟环境下仅提示，后续对接真实分享功能再启用
+				uni.showToast({
+					title: `分享《${this.news.title}》成功`,
+					icon: 'success'
 				});
+				// 真实环境分享代码（注释）
+				// uni.share({
+				//   title: this.news.title,
+				//   path: `/pages/newsDetail/NewsDetail?nid=${this.news.nid}`
+				// });
 			},
 
 			/**
-			 * 评论新闻
+			 * 评论新闻（模拟环境下仅提示）
 			 */
 			handleComment() {
-				uni.navigateTo({
-					url: `/pages/comment/Comment?nid=${this.news.nid}`
+				// 模拟环境下仅提示，后续对接评论页再启用跳转
+				uni.showToast({
+					title: '进入评论区',
+					icon: 'none'
 				});
+				// 真实环境跳转代码（注释）
+				// uni.navigateTo({
+				//   url: `/pages/comment/Comment?nid=${this.news.nid}`
+				// });
 			}
 		}
 	};

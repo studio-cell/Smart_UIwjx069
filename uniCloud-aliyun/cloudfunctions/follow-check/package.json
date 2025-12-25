@@ -1,0 +1,7 @@
+{
+  "name": "follow-check",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
