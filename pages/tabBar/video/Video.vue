@@ -2,8 +2,8 @@
 	<view class="video-container">
 		<TabBanner :list="videoCategories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
-		<scroll-view scroll-y class="video-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
-			:refresher-threshold="100">
+		<scroll-view scroll-y class="video-scroll" refresher-enabled :refresher-threshold="100"
+			:refresher-triggered="refreshing" @refresherrefresh="onPullDownRefresh">
 			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}条视频内容</view>
 
 			<view class="video-list">
@@ -38,8 +38,8 @@
 		</scroll-view>
 
 		<view v-if="showPlayer" class="video-player-mask" @click="closePlayer">
-			<video class="video-player" :src="currentVideo.url" :controls="true" :autoplay="true"
-				@ended="closePlayer"></video>
+			<video class="video-player" :src="currentVideo.url" :controls="true" :autoplay="true" @ended="closePlayer"
+				@click.stop></video>
 		</view>
 	</view>
 </template>
@@ -134,7 +134,8 @@
 				showUpdateTip: false,
 				updateCount: 0,
 				showPlayer: false,
-				currentVideo: {}
+				currentVideo: {},
+				refreshing: false // 新增：scroll-view刷新状态控制
 			};
 		},
 		computed: {
@@ -160,6 +161,9 @@
 				uni.showTabBar();
 			},
 			onPullDownRefresh() {
+				// 开启刷新状态
+				this.refreshing = true;
+
 				setTimeout(() => {
 					const newVideos = [{
 							vid: `v_new_${Date.now()}_1`,
@@ -192,13 +196,20 @@
 							isCollected: false
 						}
 					];
+
+					// 更新视频列表
 					this.videoList = [...newVideos, ...this.videoList];
 					this.updateCount = newVideos.length;
 					this.showUpdateTip = true;
-					uni.stopPullDownRefresh();
+
+					// 停止刷新（使用scroll-view的刷新控制）
+					this.refreshing = false;
+
 					setTimeout(() => {
 						this.showUpdateTip = false;
 					}, 3000);
+
+					// 显示红点提示
 					uni.showTabBarRedDot({
 						index: 1
 					});
@@ -431,7 +442,8 @@
 
 	.video-player {
 		width: 90%;
-		height: 500rpx;
+		height: calc(90vw * 9 / 16);
+		/* 修改：自适应高度，保持16:9比例 */
 		border-radius: 12rpx;
 	}
 </style>
