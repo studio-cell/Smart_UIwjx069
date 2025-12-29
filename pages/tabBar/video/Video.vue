@@ -161,7 +161,7 @@
 				uni.showTabBar();
 			},
 			onPullDownRefresh() {
-				// 开启刷新状态
+				// 开启刷新状态1111
 				this.refreshing = true;
 
 				setTimeout(() => {
