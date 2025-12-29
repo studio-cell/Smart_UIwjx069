@@ -1,0 +1,7 @@
+{
+  "name": "video-collect",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
