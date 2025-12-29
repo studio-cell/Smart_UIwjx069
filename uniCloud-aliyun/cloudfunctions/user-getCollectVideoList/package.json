@@ -1,0 +1,7 @@
+{
+  "name": "user-getCollectVideoList",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

@@ -146,6 +146,23 @@
 					this.videoList.filter(video => video.category === category);
 			}
 		},
+		onLoad() {
+			// 页面加载时，查询用户点赞记录
+			this.getUserLikeVideoList();
+			// 同时查询收藏记录
+			this.getUserCollectVideoList();
+		},
+		onShow() {
+			// 页面切换回来时（比如登录后返回），重新查询状态
+			this.getUserLikeVideoList();
+			this.getUserCollectVideoList();
+		},
+		onHide() {
+			uni.hideTabBarRedDot({
+				index: 1
+			});
+			this.closePlayer();
+		},
 		methods: {
 			handleTabClick(index) {
 				this.currentTab = index;
@@ -160,6 +177,71 @@
 				this.currentVideo = {};
 				uni.showTabBar();
 			},
+
+			// ========== 查询用户点赞视频列表（用于回显点赞状态） ==========
+			async getUserLikeVideoList() {
+				const userId = uni.getStorageSync('userInfo').userId;
+				// 未登录时，不查询，直接重置所有视频点赞状态为false
+				if (!userId) {
+					this.videoList.forEach(video => {
+						video.isLiked = false;
+					});
+					return;
+				}
+
+				try {
+					// 调用云函数（需新增：查询用户点赞记录）
+					const res = await uniCloud.callFunction({
+						name: 'user-getLikeVideoList', // 新增云函数名称
+						data: {
+							userId
+						}
+					});
+
+					if (res.result.code === 200) {
+						const likeVideoIds = res.result.data.map(item => item.videoId); // 获取用户所有点赞的视频ID
+						// 遍历前端视频列表，匹配视频ID，设置isLiked为true
+						this.videoList.forEach(video => {
+							video.isLiked = likeVideoIds.includes(video.vid);
+						});
+					}
+				} catch (error) {
+					console.error('查询点赞记录失败：', error);
+				}
+			},
+
+			// ========== 查询用户收藏视频列表（用于回显收藏状态） ==========
+			async getUserCollectVideoList() {
+				const userId = uni.getStorageSync('userInfo').userId;
+				// 未登录时，重置所有视频收藏状态为false
+				if (!userId) {
+					this.videoList.forEach(video => {
+						video.isCollected = false;
+					});
+					return;
+				}
+
+				try {
+					// 调用云函数（新增：查询用户收藏记录）
+					const res = await uniCloud.callFunction({
+						name: 'user-getCollectVideoList', // 新增云函数名称
+						data: {
+							userId
+						}
+					});
+
+					if (res.result.code === 200) {
+						const collectVideoIds = res.result.data.map(item => item.videoId); // 获取用户所有收藏的视频ID
+						// 遍历前端视频列表，匹配视频ID，设置isCollected为true
+						this.videoList.forEach(video => {
+							video.isCollected = collectVideoIds.includes(video.vid);
+						});
+					}
+				} catch (error) {
+					console.error('查询收藏记录失败：', error);
+				}
+			},
+
 			onPullDownRefresh() {
 				// 开启刷新状态
 				this.refreshing = true;
@@ -213,6 +295,10 @@
 					uni.showTabBarRedDot({
 						index: 1
 					});
+
+					// 下拉刷新后，重新查询点赞/收藏记录
+					this.getUserLikeVideoList();
+					this.getUserCollectVideoList();
 				}, 1500);
 			},
 			async toggleLike(video) {
@@ -293,12 +379,6 @@
 					});
 				}
 			}
-		},
-		onHide() {
-			uni.hideTabBarRedDot({
-				index: 1
-			});
-			this.closePlayer();
 		}
 	};
 </script>
