@@ -184,19 +184,19 @@
 		{
 			"path": "pages/mine/collection/collection",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "我的收藏"
 			}
 		},
 		{
 			"path": "pages/mine/history/history",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "浏览历史"
 			}
 		},
 		{
 			"path": "pages/mine/comment/comment",
 			"style": {
-				"navigationBarTitleText": ""
+				"navigationBarTitleText": "我的评论"
 			}
 		}
 	],

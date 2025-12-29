@@ -1,0 +1,7 @@
+{
+  "name": "user-getLikeVideoList",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}
