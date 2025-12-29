@@ -2,35 +2,49 @@
 	<view class="mine-container">
 		<!-- 未登录状态 -->
 		<view v-if="!userInfo.isLogin" class="unlogin" @click="goToLogin">
-			<text class="login-text">点击登录</text>
+			<text class="login-icon">👤</text>
+			<text class="login-text">点击登录/注册</text>
 		</view>
 
 		<!-- 已登录状态（简化头像：只显示，暂不上传） -->
 		<view v-else class="user-info">
-			<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
-			<view class="user-detail">
-				<text class="username">{{ userInfo.username }}</text>
-				<text class="user-id">昵称：{{ userInfo.nickname || '未设置' }}</text>
+			<view class="user-info-bg">
+				<!-- 渐变背景层 -->
+				<view class="bg-gradient"></view>
+				<!-- 用户信息内容 -->
+				<view class="user-info-content">
+					<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
+					<view class="user-detail">
+						<text class="username">{{ userInfo.username }}</text>
+						<text class="user-desc">昵称：{{ userInfo.nickname || '未设置' }}</text>
+					</view>
+					<button class="logout-btn" @click="handleLogout">退出登录</button>
+				</view>
 			</view>
-			<button class="logout-btn" @click="handleLogout">退出登录</button>
 		</view>
 
 		<!-- 功能列表 -->
 		<view class="function-list" v-if="userInfo.isLogin">
-			<view class="function-item" @click="goToCollection">
-				<text class="item-icon">⭐</text>
+			<view class="function-item" @click="goToCollection" hover-class="item-hover">
+				<view class="item-icon-wrap collection-icon">
+					<text class="item-icon">⭐</text>
+				</view>
 				<text class="item-text">我的收藏</text>
-				<text class="item-arrow">→</text>
+				<text class="item-arrow">＞</text>
 			</view>
-			<view class="function-item" @click="goToComment">
-				<text class="item-icon">💬</text>
+			<view class="function-item" @click="goToComment" hover-class="item-hover">
+				<view class="item-icon-wrap comment-icon">
+					<text class="item-icon">💬</text>
+				</view>
 				<text class="item-text">我的评论</text>
-				<text class="item-arrow">→</text>
+				<text class="item-arrow">＞</text>
 			</view>
-			<view class="function-item" @click="goToHistory">
-				<text class="item-icon">🕒</text>
+			<view class="function-item" @click="goToHistory" hover-class="item-hover">
+				<view class="item-icon-wrap history-icon">
+					<text class="item-icon">🕒</text>
+				</view>
 				<text class="item-text">浏览历史</text>
-				<text class="item-arrow">→</text>
+				<text class="item-arrow">＞</text>
 			</view>
 		</view>
 	</view>
@@ -128,40 +142,82 @@
 
 <style scoped>
 	.mine-container {
-		padding: 20rpx;
+		padding: 0;
 		min-height: 100vh;
-		background-color: #f7f7f7;
+		background-color: #f2f4f6; /* 更柔和的背景灰 */
 	}
 
+	/* 未登录状态样式升级 */
 	.unlogin {
-		height: 160rpx;
-		background-color: #fff;
-		border-radius: 12rpx;
+		margin: 20rpx 20rpx 30rpx;
+		height: 180rpx;
+		background: #ffffff;
+		border-radius: 16rpx; /* 更大圆角更精致 */
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05); /* 轻微阴影增加层次感 */
 		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		margin-bottom: 20rpx;
+		transition: all 0.3s ease; /* 过渡动画 */
+	}
+
+	.unlogin:active {
+		transform: scale(0.98); /* 点击缩放反馈 */
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+	}
+
+	.login-icon {
+		font-size: 48rpx;
+		margin-bottom: 12rpx;
+		color: #c0c4cc;
 	}
 
 	.login-text {
-		font-size: 32rpx;
-		color: #999;
+		font-size: 30rpx;
+		color: #606266;
+		font-weight: 500;
 	}
 
+	/* 已登录用户信息样式升级 */
 	.user-info {
+		margin: 20rpx 20rpx 30rpx;
+		border-radius: 16rpx;
+		overflow: hidden; /* 裁剪渐变背景圆角 */
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+	}
+
+	.user-info-bg {
+		position: relative;
+	}
+
+	/* 渐变背景层 */
+	.bg-gradient {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 120rpx;
+		/* 柔和的蓝紫渐变 */
+		background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%);
+		z-index: 1;
+	}
+
+	.user-info-content {
+		position: relative;
+		z-index: 2;
 		display: flex;
 		align-items: center;
-		padding: 30rpx;
-		background-color: #fff;
-		border-radius: 12rpx;
-		margin-bottom: 20rpx;
+		padding: 30rpx 30rpx 40rpx;
+		background: #ffffff;
 	}
 
 	.avatar {
-		width: 100rpx;
-		height: 100rpx;
+		width: 120rpx;
+		height: 120rpx;
 		border-radius: 50%;
-		margin-right: 20rpx;
+		margin-right: 24rpx;
+		border: 4rpx solid #ffffff; /* 白色边框突出头像 */
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1); /* 头像阴影增加立体感 */
 	}
 
 	.user-detail {
@@ -169,56 +225,107 @@
 	}
 
 	.username {
-		font-size: 32rpx;
-		font-weight: bold;
-		color: #333;
+		font-size: 36rpx;
+		font-weight: 600;
+		color: #303133;
 		display: block;
-		margin-bottom: 8rpx;
+		margin-bottom: 10rpx;
+		letter-spacing: 1rpx; /* 字间距更舒适 */
 	}
 
-	.user-id {
+	.user-desc {
 		font-size: 24rpx;
-		color: #999;
+		color: #909399;
+		line-height: 1.4;
 	}
 
 	.logout-btn {
-		width: 120rpx;
-		height: 60rpx;
-		line-height: 60rpx;
-		background-color: #f5f5f5;
-		color: #d00;
-		border-radius: 30rpx;
-		font-size: 24rpx;
+		width: 140rpx;
+		height: 68rpx;
+		line-height: 68rpx;
+		background-color: #f8f9fa;
+		color: #e63946;
+		border-radius: 34rpx;
+		font-size: 26rpx;
+		font-weight: 500;
+		border: none;
+		transition: all 0.3s ease;
 	}
 
+	.logout-btn:active {
+		background-color: #f0f0f0;
+		transform: scale(0.96);
+	}
+
+	/* 功能列表样式升级 */
 	.function-list {
-		background-color: #fff;
-		border-radius: 12rpx;
+		margin: 0 20rpx 40rpx;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+		overflow: hidden;
 	}
 
 	.function-item {
 		display: flex;
 		align-items: center;
-		padding: 24rpx;
-		border-bottom: 1rpx solid #f5f5f5;
+		padding: 30rpx 30rpx;
+		border-bottom: 1rpx solid #f5f7fa; /* 更柔和的分隔线 */
+		transition: all 0.2s ease;
+	}
+
+	/* 最后一个项去掉分隔线 */
+	.function-item:last-child {
+		border-bottom: none;
+	}
+
+	/* 点击悬浮样式 */
+	.item-hover {
+		background-color: #f8f9fa;
+	}
+
+	/* 图标包裹层（增加背景更精致） */
+	.item-icon-wrap {
+		width: 80rpx;
+		height: 80rpx;
+		border-radius: 12rpx;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-right: 24rpx;
+	}
+
+	.collection-icon {
+		background-color: #fef7f2;
+	}
+
+	.comment-icon {
+		background-color: #f0f9ff;
+	}
+
+	.history-icon {
+		background-color: #f5fafe;
 	}
 
 	.item-icon {
-		font-size: 32rpx;
-		margin-right: 20rpx;
-		width: 40rpx;
-		text-align: center;
-		color: #d00;
+		font-size: 36rpx;
+		color: #409eff;
 	}
 
 	.item-text {
 		flex: 1;
-		font-size: 28rpx;
-		color: #333;
+		font-size: 30rpx;
+		color: #303133;
+		font-weight: 500;
 	}
 
 	.item-arrow {
-		font-size: 24rpx;
-		color: #ccc;
+		font-size: 28rpx;
+		color: #c0c4cc;
+		transition: all 0.2s ease;
+	}
+
+	.function-item:active .item-arrow {
+		transform: translateX(4rpx);
 	}
 </style>
