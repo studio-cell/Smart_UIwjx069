@@ -20,19 +20,32 @@ exports.main = async (event, context) => {
 	}
 
 	try {
-		// 1. 查询视频信息
-		const videoRes = await videoDB.doc(videoId).get();
+		// 1. 查询视频是否存在
+		const videoRes = await videoDB.where({
+			vid: videoId
+		}).get();
 
-		// 验证视频是否存在
-		if (!videoRes.data || videoRes.data.length === 0) {
-			return {
-				code: 404,
-				message: '视频不存在'
-			};
+		let videoDocId = null;
+		let currentLikeCount = 0;
+
+		if (videoRes.data && videoRes.data.length > 0) {
+			// 视频已存在
+			videoDocId = videoRes.data[0]._id;
+			currentLikeCount = videoRes.data[0].likeCount || 0;
+		} else {
+			// 视频不存在，创建一条记录（使用前端的本地数据）
+			// 这里需要前端在点赞时传递视频的完整信息，或者我们创建基础记录
+			const createRes = await videoDB.add({
+				vid: videoId,
+				likeCount: 0,
+				collectCount: 0,
+				createTime: Date.now(),
+				updateTime: Date.now()
+			});
+
+			videoDocId = createRes.id;
+			currentLikeCount = 0;
 		}
-
-		const videoData = videoRes.data[0];
-		const currentLikeCount = videoData.likeCount || 0;
 
 		// 2. 处理取消点赞时的边界情况
 		if (isCancel) {
@@ -51,10 +64,9 @@ exports.main = async (event, context) => {
 			}
 
 			// 更新视频点赞数（减1）
-			await videoDB.doc(videoId).update({
-				inc: {
-					likeCount: -1
-				}
+			await videoDB.doc(videoDocId).update({
+				likeCount: currentLikeCount - 1,
+				updateTime: Date.now()
 			});
 
 			// 删除用户点赞记录
@@ -93,10 +105,8 @@ exports.main = async (event, context) => {
 		});
 
 		// 更新视频点赞数（加1）
-		await videoDB.doc(videoId).update({
-			inc: {
-				likeCount: 1
-			},
+		await videoDB.doc(videoDocId).update({
+			likeCount: currentLikeCount + 1,
 			updateTime: Date.now()
 		});
 
@@ -110,7 +120,7 @@ exports.main = async (event, context) => {
 		return {
 			code: 500,
 			message: '操作失败',
-			errMsg: error.message
+			error: error.message
 		};
 	}
 };
