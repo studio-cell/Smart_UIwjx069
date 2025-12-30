@@ -229,7 +229,7 @@
 						comments: 8950,
 						createTime: new Date(Date.now() - 5 * 60 * 1000).getTime(), // 5分钟前
 						category: '体育',
-						cover: '/static/news/sports1.jpg',
+						cover: 'https://picsum.photos/400/200?random=2',
 						summary: '在刚刚结束的亚运会比赛中，中国队在跳水项目再夺一金，金牌总数突破100枚...',
 						isTop: false
 					},
