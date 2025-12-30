@@ -106,12 +106,12 @@
 			const initialVideos = [{
 					vid: 'v1001',
 					title: '央行降准政策解读：对实体经济有哪些影响？',
-					cover: "https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250",
+					cover: "/static/avatar/finance.jpg",
 					url: getVideoUrl('finance1'), // 财经专属视频
 					duration: '05:28',
 					playCount: '12.5万',
 					author: '财经观察室',
-					authorAvatar: '/static/avatar/finance.png',
+					authorAvatar: '/static/avatar/finance.jpg',
 					category: '财经',
 					likeCount: 1256,
 					collectCount: 890,
@@ -122,12 +122,12 @@
 				{
 					vid: 'v1002',
 					title: '2025亚运会中国队夺冠瞬间合集',
-					cover: "https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250",
+					cover: "/static/avatar/sports.jpg",
 					url: getVideoUrl('sports1'), // 体育专属视频
 					duration: '08:15',
 					playCount: '89.8万',
 					author: '体育前线',
-					authorAvatar: '/static/avatar/sports.png',
+					authorAvatar: '/static/avatar/sports.jpg',
 					category: '体育',
 					likeCount: 8950,
 					collectCount: 5620,
@@ -138,12 +138,12 @@
 				{
 					vid: 'v1003',
 					title: '最新科技发布会：人工智能新品亮相',
-					cover: "https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250",
+					cover: "/static/avatar/tech.jpg",
 					url: getVideoUrl('tech1'), // 科技专属视频
 					duration: '12:40',
 					playCount: '56.3万',
 					author: '科技前沿',
-					authorAvatar: '/static/avatar/tech.png',
+					authorAvatar: '/static/avatar/tech.jpg',
 					category: '科技',
 					likeCount: 3580,
 					collectCount: 2150,
@@ -154,12 +154,12 @@
 				{
 					vid: 'v1004',
 					title: '2025全国两会重点内容解读',
-					cover: "https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250",
+					cover: "/static/avatar/politics.jpg",
 					url: getVideoUrl('politics1'), // 时政专属视频
 					duration: '06:50',
 					playCount: '78.2万',
 					author: '时政新闻',
-					authorAvatar: '/static/avatar/politics.png',
+					authorAvatar: '/static/avatar/politics.jpg',
 					category: '时政',
 					likeCount: 6890,
 					collectCount: 4210,
@@ -170,12 +170,12 @@
 				{
 					vid: 'v1005',
 					title: '热门电影幕后花絮：导演独家专访',
-					cover: "https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250",
+					cover: "/static/avatar/ent.jpg",
 					url: getVideoUrl('ent1'), // 娱乐专属视频
 					duration: '09:12',
 					playCount: '102.4万',
 					author: '娱乐星探',
-					authorAvatar: '/static/avatar/ent.png',
+					authorAvatar: '/static/avatar/ent.jpg',
 					category: '娱乐',
 					likeCount: 9870,
 					collectCount: 6540,
