@@ -3,10 +3,10 @@
 	"description": "账户表：存储用户登录验证信息，与UserInfo表关联",
 	"required": ["username", "password", "register_time", "user_id"],
 	"permission": {
-		"read": false, 
-		"create": true, 
-		"update": false, 
-		"delete": false 
+		"read": false,
+		"create": true,
+		"update": true,
+		"delete": false
 	},
 	"properties": {
 		"_id": {
@@ -19,7 +19,21 @@
 			"trim": "both",
 			"minLength": 2,
 			"maxLength": 10,
-			"unique": true 
+			"unique": true
+		},
+		"nickname": {
+			"bsonType": "string",
+			"title": "昵称",
+			"description": "用户昵称",
+			"trim": "both",
+			"maxLength": 20
+		},
+		"avatar": {
+			"bsonType": "string",
+			"title": "头像",
+			"description": "用户头像URL",
+			"trim": "both",
+			"maxLength": 500
 		},
 		"password": {
 			"bsonType": "string",
@@ -44,8 +58,8 @@
 			"title": "关联用户ID",
 			"description": "关联UserInfo表的_id字段，建立表关联",
 			"foreignKey": {
-				"collection": "UserInfo", 
-				"field": "_id" 
+				"collection": "UserInfo",
+				"field": "_id"
 			}
 		}
 	}

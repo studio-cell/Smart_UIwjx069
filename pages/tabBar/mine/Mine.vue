@@ -6,14 +6,20 @@
 			<text class="login-text">点击登录/注册</text>
 		</view>
 
-		<!-- 已登录状态（简化头像：只显示，暂不上传） -->
+		<!-- 已登录状态 -->
 		<view v-else class="user-info">
 			<view class="user-info-bg">
 				<!-- 渐变背景层 -->
 				<view class="bg-gradient"></view>
 				<!-- 用户信息内容 -->
 				<view class="user-info-content">
-					<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
+					<view class="avatar-wrapper" @click="handleAvatarClick">
+						<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
+						<view class="avatar-mask">
+							<text class="avatar-icon">📷</text>
+							<text class="avatar-text">更换头像</text>
+						</view>
+					</view>
 					<view class="user-detail">
 						<text class="username">{{ userInfo.username }}</text>
 						<text class="user-desc">昵称：{{ userInfo.nickname || '未设置' }}</text>
@@ -82,6 +88,125 @@
 				uni.setTabBarItem({
 					index: 3,
 					text: this.userInfo.isLogin ? "我的" : "未登录"
+				});
+			},
+
+			// 点击头像处理
+			handleAvatarClick() {
+				uni.showActionSheet({
+					itemList: ['从相册选择', '拍照', '查看大图'],
+					success: (res) => {
+						switch (res.tapIndex) {
+							case 0:
+								this.chooseFromAlbum();
+								break;
+							case 1:
+								this.takePhoto();
+								break;
+							case 2:
+								this.viewAvatar();
+								break;
+						}
+					}
+				});
+			},
+
+			// 从相册选择
+			chooseFromAlbum() {
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['compressed'], // 压缩图片
+					sourceType: ['album'],
+					success: (res) => {
+						this.uploadAvatar(res.tempFilePaths[0]);
+					}
+				});
+			},
+
+			// 拍照
+			takePhoto() {
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['compressed'],
+					sourceType: ['camera'],
+					success: (res) => {
+						this.uploadAvatar(res.tempFilePaths[0]);
+					}
+				});
+			},
+
+			// 上传头像
+			uploadAvatar(filePath) {
+				uni.showLoading({
+					title: '上传中...',
+					mask: true
+				});
+
+				// 先上传到云存储
+				uniCloud.uploadFile({
+					filePath: filePath,
+					cloudPath: `avatar/${this.userInfo.userId}_${Date.now()}.jpg`,
+					success: (uploadRes) => {
+						console.log('上传成功：', uploadRes);
+
+						// 获取文件URL
+						const avatarUrl = uploadRes.fileID;
+
+						// 调用云函数更新头像
+						uniCloud.callFunction({
+							name: 'user-updateAvatar',
+							data: {
+								userId: this.userInfo.userId,
+								avatarUrl: avatarUrl
+							},
+							success: (res) => {
+								console.log('更新头像成功：', res);
+								if (res.result.code === 200) {
+									// 更新本地存储
+									this.userInfo.avatar = avatarUrl;
+									const userInfo = uni.getStorageSync('userInfo') || {};
+									userInfo.avatar = avatarUrl;
+									uni.setStorageSync('userInfo', userInfo);
+
+									uni.showToast({
+										title: '头像更新成功',
+										icon: 'success'
+									});
+								} else {
+									uni.showToast({
+										title: res.result.message || '更新失败',
+										icon: 'none'
+									});
+								}
+							},
+							fail: (err) => {
+								console.error('更新头像失败：', err);
+								uni.showToast({
+									title: '网络异常，请重试',
+									icon: 'none'
+								});
+							},
+							complete: () => {
+								uni.hideLoading();
+							}
+						});
+					},
+					fail: (err) => {
+						console.error('上传失败：', err);
+						uni.hideLoading();
+						uni.showToast({
+							title: '上传失败，请重试',
+							icon: 'none'
+						});
+					}
+				});
+			},
+
+			// 查看大图
+			viewAvatar() {
+				uni.previewImage({
+					urls: [this.userInfo.avatar || '/static/avatar.png'],
+					current: 0
 				});
 			},
 
@@ -209,6 +334,52 @@
 		align-items: center;
 		padding: 30rpx 30rpx 40rpx;
 		background: #ffffff;
+	}
+
+	.avatar-wrapper {
+		position: relative;
+		width: 120rpx;
+		height: 120rpx;
+		margin-right: 24rpx;
+		border-radius: 50%;
+		overflow: hidden;
+		border: 4rpx solid #ffffff;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+	}
+
+	.avatar {
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+	}
+
+	.avatar-mask {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.5);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.avatar-wrapper:active .avatar-mask {
+		opacity: 1;
+	}
+
+	.avatar-icon {
+		font-size: 36rpx;
+		margin-bottom: 4rpx;
+	}
+
+	.avatar-text {
+		font-size: 18rpx;
+		color: #ffffff;
 	}
 
 	.avatar {
