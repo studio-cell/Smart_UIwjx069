@@ -47,7 +47,7 @@
 			<!-- 新闻列表 -->
 			<view v-else class="news-list">
 				<view v-for="news in filteredNews" :key="news.nid || news._id"
-					@click="goToDetail(news.nid || news._id)">
+					@click="goToDetail(news)">
 					<NewsView :nid="news.nid || news._id" :title="news.title" :is-top="news.isTop" :author="news.author"
 						:comments="news.comments" :time="news.time || formatTime(news.createTime)"
 						:mode="news.category === '广告' ? 3 : 2" :images="[news.cover]"
@@ -241,6 +241,7 @@
 							category: item.category,
 							cover: item.cover,
 							summary: item.summary,
+							content: item.content, // 添加content字段
 							isTop: item.is_top
 						}));
 
@@ -255,21 +256,123 @@
 						// 判断是否还有更多数据
 						this.noMore = this.newsList.length >= res.result.data.total;
 					} else {
-						uni.showToast({
-							title: res.result.message || '获取新闻失败',
-							icon: 'none'
-						});
+						throw new Error(res.result.message || '获取新闻失败');
 					}
 				} catch (error) {
-					console.error('获取新闻列表失败：', error);
-					uni.showToast({
-						title: '网络异常，请重试',
-						icon: 'none'
-					});
+					console.error('获取新闻列表失败，使用本地模拟数据：', error);
+					// 云函数失败时，使用本地模拟数据
+					this.getMockNewsList(isRefresh, category);
 				} finally {
 					this.isRefreshing = false;
 					this.loadingMore = false;
 					this.isTabChanging = false;
+				}
+			},
+
+			/**
+			 * 获取本地模拟新闻数据
+			 */
+			getMockNewsList(isRefresh, category) {
+				// 模拟新闻数据
+				const mockNewsList = [
+					{
+						nid: 'n1001',
+						title: '2025央行降准0.5个百分点，释放长期资金约1万亿元',
+						author: '财经时报',
+						comments: 1256,
+						time: this.formatTime(new Date(Date.now() - 2 * 60 * 60 * 1000).getTime()),
+						createTime: new Date(Date.now() - 2 * 60 * 60 * 1000).getTime(),
+						category: '财经',
+						cover: 'https://picsum.photos/400/200?random=1',
+						summary: '央行今日宣布降准，旨在支持实体经济发展，降低企业融资成本...',
+						content: '<p>中国人民银行今日宣布，为支持实体经济发展，降低社会融资成本，决定于近期实施降准措施，下调金融机构存款准备金率0.5个百分点。</p><p>此次降准将释放长期资金约1万亿元，为银行体系提供低成本、长期稳定的流动性资金。</p><p>分析人士指出，降准有助于保持银行体系流动性合理充裕，引导货币信贷平稳适度增长，为经济高质量发展营造适宜的货币金融环境。</p><p>同时，降准也体现了国家稳健货币政策灵活适度的特点，有助于稳定市场预期，提振市场信心。</p><p>业内专家表示，此次降准对小微企业和个体工商户等实体经济主体将产生积极影响，有利于降低企业融资成本，激发市场主体活力。</p>',
+						isTop: true
+					},
+					{
+						nid: 'n1002',
+						title: '2025亚运会中国队斩获第100枚金牌，创历史新高',
+						author: '体育周报',
+						comments: 8950,
+						time: this.formatTime(new Date(Date.now() - 5 * 60 * 1000).getTime()),
+						createTime: new Date(Date.now() - 5 * 60 * 1000).getTime(),
+						category: '体育',
+						cover: 'https://picsum.photos/400/200?random=2',
+						summary: '在刚刚结束的亚运会比赛中，中国队在跳水项目再夺一金，金牌总数突破100枚...',
+						content: '<p>在刚刚结束的亚运会跳水女子10米台决赛中，中国选手以完美表现夺得金牌，这是中国代表团在本届亚运会上获得的第100枚金牌，创造了历史新高。</p><p>比赛中，中国选手从第一跳开始就展现出了强大的实力，每一跳都得到了裁判的高度认可，最终以总分领先第二名的巨大优势夺冠。</p><p>截至目前，中国代表团在亚运会金牌榜上遥遥领先，展现了体育强国的雄厚实力。</p><p>中国体育代表团的优秀表现，不仅为国争光，也激励着全国人民为实现体育强国梦而努力奋斗。</p><p>亚运会作为亚洲最高水平的综合性运动会，各国选手在这里切磋技艺，增进友谊，共同推动亚洲体育事业的发展。</p>',
+						isTop: false
+					},
+					{
+						nid: 'n1003',
+						title: '人工智能大模型迎来重大突破，可自主完成复杂任务',
+						author: '科技前沿',
+						comments: 3580,
+						time: this.formatTime(new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).getTime()),
+						createTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).getTime(),
+						category: '科技',
+						cover: 'https://picsum.photos/400/200?random=3',
+						summary: '国内科技企业发布新一代AI大模型，具备自主学习和决策能力，应用场景覆盖多个领域...',
+						content: '<p>国内知名科技企业今日发布了新一代人工智能大模型，该模型在自主学习和决策能力方面取得重大突破，引起了业界广泛关注。</p><p>据介绍，这款AI大模型采用最新的深度学习技术，能够理解和处理自然语言，具备强大的推理和创造能力。</p><p>在实际应用中，该模型可以自主完成包括文档撰写、代码生成、数据分析等在内的复杂任务，大大提升了工作效率。</p><p>专家表示，这一突破标志着人工智能技术进入了新的发展阶段，将在教育、医疗、金融等多个领域产生深远影响。</p><p>同时，企业也强调将坚持技术向善的理念，确保AI技术的安全和可控，为社会发展提供助力。</p>',
+						isTop: false
+					},
+					{
+						nid: 'n1004',
+						title: '2025全国两会重点关注民生问题，多领域政策将调整',
+						author: '时政新闻',
+						comments: 6890,
+						time: this.formatTime(new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).getTime()),
+						createTime: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).getTime(),
+						category: '时政',
+						cover: 'https://picsum.photos/400/200?random=4',
+						summary: '全国两会即将召开，教育、医疗、养老等民生议题成为关注焦点...',
+						content: '<p>全国两会即将召开，教育、医疗、养老等民生议题成为关注焦点，预计将有多个领域的政策进行调整和优化。</p><p>教育方面，有望出台措施减轻学生课业负担，推进教育公平；医疗方面，将进一步完善医保体系，提升基层医疗服务能力。</p><p>养老方面，将加大养老服务供给，完善养老保障体系，让老年人安享晚年。</p><p>此外，住房保障、就业促进、食品安全等民生问题也将得到重点关注和解决。</p><p>这些政策的调整和完善，将切实改善人民群众的生活质量，提升人民群众的获得感、幸福感、安全感。</p>',
+						isTop: true
+					},
+					{
+						nid: 'n1005',
+						title: '热门电影票房突破50亿，成年度票房冠军',
+						author: '娱乐星探',
+						comments: 9870,
+						time: this.formatTime(new Date(Date.now() - 10 * 1000).getTime()),
+						createTime: new Date(Date.now() - 10 * 1000).getTime(),
+						category: '娱乐',
+						cover: 'https://picsum.photos/400/200?random=5',
+						summary: '某国产电影上映10天票房突破50亿，刷新多项票房纪录...',
+						content: '<p>某国产电影上映10天票房突破50亿，刷新多项票房纪录，成为年度票房冠军。</p><p>该片以精彩的剧情、精湛的制作和深刻的主题，赢得了观众和影评人的广泛好评。</p><p>影片讲述了一个关于梦想、奋斗和成长的故事，触动了无数观众的心弦，引发了社会各界的深入思考。</p><p>业内人士表示，这部电影的成功标志着中国电影产业的成熟和发展，也展现了国产电影的市场潜力和文化影响力。</p><p>随着电影市场的不断壮大，未来将会有更多优秀的国产电影涌现，为观众带来更多精彩的作品。</p>',
+						isTop: false
+					},
+					{
+						nid: 'ad1001',
+						title: '【广告】新款智能手机限时特惠，立减800元',
+						author: '品牌官方',
+						comments: 0,
+						time: this.formatTime(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime()),
+						createTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime(),
+						category: '广告',
+						cover: 'https://picsum.photos/400/200?random=6',
+						summary: '新款旗舰手机搭载最新处理器，限时优惠活动进行中...',
+						content: '<p>新款旗舰手机搭载最新处理器，限时优惠活动进行中，立减800元。</p><p>该手机采用全新设计语言，配备高清全面屏，拍照效果惊艳，续航能力出色。</p><p>现在购买即可享受超值优惠，数量有限，先到先得。</p>',
+						isTop: false
+					}
+				];
+
+				// 根据分类筛选
+				let filteredList = mockNewsList;
+				if (category === "推荐") {
+					filteredList = mockNewsList.filter(n => n.category !== '广告');
+				} else if (category !== "广告") {
+					filteredList = mockNewsList.filter(n => n.category === category);
+				}
+
+				if (isRefresh) {
+					this.newsList = filteredList;
+					this.updateCount = filteredList.length;
+					setTimeout(() => this.showUpdateTip = false, 3000);
+					uni.showToast({
+						title: '已加载本地数据',
+						icon: 'none'
+					});
+				} else {
+					this.noMore = true; // 模拟数据只有一页
 				}
 			},
 
@@ -298,18 +401,35 @@
 				});
 			},
 
-			/**
-			 * 跳转到新闻详情页
-			 */
-			goToDetail(nid) {
-				const news = this.newsList.find(item => (item.nid || item._id) === nid);
-				if (news && news.category === '广告') {
+				/**
+				 * 跳转到新闻详情页
+				 */
+			goToDetail(newsItem) {
+				// 兼容两种参数：传对象或传nid字符串
+				let news;
+				if (typeof newsItem === 'object') {
+					news = newsItem;
+				} else {
+					news = this.newsList.find(item => (item.nid || item._id) === newsItem);
+				}
+
+				if (!news) {
+					uni.showToast({
+						title: "新闻数据异常",
+						icon: "none"
+					});
+					return;
+				}
+
+				if (news.category === '广告') {
 					uni.showToast({
 						title: "广告内容暂无法查看详情",
 						icon: "none"
 					});
 					return;
 				}
+
+				const nid = news.nid || news._id;
 				uni.navigateTo({
 					url: `/pages/newsDetail/NewsDetail?nid=${nid}`,
 					success: (res) => {
