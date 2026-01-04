@@ -382,15 +382,6 @@
 		color: #ffffff;
 	}
 
-	.avatar {
-		width: 120rpx;
-		height: 120rpx;
-		border-radius: 50%;
-		margin-right: 24rpx;
-		border: 4rpx solid #ffffff; /* 白色边框突出头像 */
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1); /* 头像阴影增加立体感 */
-	}
-
 	.user-detail {
 		flex: 1;
 	}
