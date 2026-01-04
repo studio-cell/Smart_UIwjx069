@@ -66,6 +66,8 @@
 				this.isFollowed = false;
 				// 初始化收藏状态（新增）
 				this.initCollectStatus();
+				// 记录浏览历史
+				this.saveToHistory();
 				console.log('从列表页获取新闻数据：', JSON.parse(JSON.stringify(this.news)));
 			});
 
@@ -78,6 +80,8 @@
 					this.authorId = mockNews.author;
 					// 初始化收藏状态（新增）
 					this.initCollectStatus();
+					// 记录浏览历史
+					this.saveToHistory();
 				} else {
 					uni.showToast({
 						title: '暂无该新闻数据',
@@ -89,6 +93,43 @@
 			}
 		},
 		methods: {
+			/**
+			 * 记录浏览历史到本地存储
+			 */
+			saveToHistory() {
+				if (!this.news.nid) return;
+
+				// 获取当前浏览历史
+				let historyList = uni.getStorageSync('newsHistory') || [];
+
+				// 构建历史记录对象
+				const historyItem = {
+					newsId: this.news.nid,
+					title: this.news.title,
+					cover: this.news.images ? this.news.images[0] : '',
+					viewTime: new Date().getTime()
+				};
+
+				// 检查是否已存在该新闻的历史记录
+				const existingIndex = historyList.findIndex(item => item.newsId === this.news.nid);
+				if (existingIndex !== -1) {
+					// 如果已存在，删除旧记录
+					historyList.splice(existingIndex, 1);
+				}
+
+				// 将新记录插入到最前面
+				historyList.unshift(historyItem);
+
+				// 限制历史记录数量，最多保存50条
+				if (historyList.length > 50) {
+					historyList = historyList.slice(0, 50);
+				}
+
+				// 保存到本地存储
+				uni.setStorageSync('newsHistory', historyList);
+				console.log('浏览历史已保存：', historyList);
+			},
+
 			/**
 			 * 初始化收藏状态（新增）
 			 */
