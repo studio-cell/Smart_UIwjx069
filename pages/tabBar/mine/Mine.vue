@@ -13,16 +13,18 @@
 				<view class="bg-gradient"></view>
 				<!-- 用户信息内容 -->
 				<view class="user-info-content">
-					<view class="avatar-wrapper" @click="handleAvatarClick">
-						<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
-						<view class="avatar-mask">
-							<text class="avatar-icon">📷</text>
-							<text class="avatar-text">更换头像</text>
+					<view class="user-info-main">
+						<view class="avatar-wrapper" @click="handleAvatarClick">
+							<image class="avatar" :src="userInfo.avatar || '/static/avatar.png'" mode="aspectFill"></image>
+							<view class="avatar-mask">
+								<text class="avatar-icon">📷</text>
+								<text class="avatar-text">更换头像</text>
+							</view>
 						</view>
-					</view>
-					<view class="user-detail">
-						<text class="username">{{ userInfo.username }}</text>
-						<text class="user-desc">昵称：{{ userInfo.nickname || '未设置' }}</text>
+						<view class="user-detail">
+							<text class="username">{{ userInfo.username }}</text>
+							<text class="user-desc">昵称：{{ userInfo.nickname || '未设置' }}</text>
+						</view>
 					</view>
 					<button class="logout-btn" @click="handleLogout">退出登录</button>
 				</view>
@@ -331,9 +333,16 @@
 		position: relative;
 		z-index: 2;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
+		align-items: stretch;
 		padding: 30rpx 30rpx 40rpx;
 		background: #ffffff;
+	}
+
+	.user-info-main {
+		display: flex;
+		align-items: center;
+		margin-bottom: 24rpx;
 	}
 
 	.avatar-wrapper {
@@ -402,21 +411,21 @@
 	}
 
 	.logout-btn {
-		width: 140rpx;
-		height: 68rpx;
-		line-height: 68rpx;
-		background-color: #f8f9fa;
+		width: 100%;
+		height: 80rpx;
+		line-height: 80rpx;
+		background-color: #fff5f5;
 		color: #e63946;
-		border-radius: 34rpx;
-		font-size: 26rpx;
+		border-radius: 16rpx;
+		font-size: 30rpx;
 		font-weight: 500;
-		border: none;
+		border: 2rpx solid #ffebee;
 		transition: all 0.3s ease;
 	}
 
 	.logout-btn:active {
-		background-color: #f0f0f0;
-		transform: scale(0.96);
+		background-color: #ffebee;
+		transform: scale(0.98);
 	}
 
 	/* 功能列表样式升级 */
