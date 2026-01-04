@@ -212,6 +212,12 @@
 				"navigationBarBackgroundColor": "#fff",
 				"navigationBarTextStyle": "black"
 			}
+		},
+		{
+			"path": "pages/test-comment/test-comment",
+			"style": {
+				"navigationBarTitleText": "评论功能测试"
+			}
 		}
 	],
 	"globalStyle": {

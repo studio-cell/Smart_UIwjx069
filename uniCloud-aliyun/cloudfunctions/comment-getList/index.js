@@ -11,8 +11,10 @@ exports.main = async (event, context) => {
 			pageSize = 20
 		} = event;
 
+		console.log('查询评论参数：', { newsId, page, pageSize });
+
 		// 参数校验
-		if (!newsId || typeof newsId !== 'string') {
+		if (!newsId) {
 			return {
 				code: 400,
 				message: '参数错误：缺少有效的新闻ID'
@@ -28,24 +30,28 @@ exports.main = async (event, context) => {
 		// 分页查询评论（按时间倒序）
 		const commentResult = await commentDB
 			.where({
-				newsId
+				newsId: String(newsId) // 确保类型一致
 			})
 			.orderBy('time', 'desc')
 			.skip(skipNum)
 			.limit(sizeNum)
 			.get();
 
+		console.log('查询到的评论数：', commentResult.data.length);
+
 		// 获取总条数（优化：使用count聚合，性能更高）
 		const countResult = await commentDB.where({
-			newsId
+			newsId: String(newsId)
 		}).count();
 
-		// 数据脱敏：移除敏感字段
-		const commentList = commentResult.data.map(item => {
-			delete item._id; // 可选
-			delete item.userId; // 可选：根据业务是否隐藏用户ID
-			return item;
-		});
+		console.log('评论总数：', countResult.total);
+
+		// 返回完整数据，不删除字段
+		const commentList = commentResult.data.map(item => ({
+			...item,
+			commentId: item._id, // 添加 commentId 字段方便前端使用
+			_id: item._id
+		}));
 
 		return {
 			code: 200,
@@ -63,7 +69,7 @@ exports.main = async (event, context) => {
 		return {
 			code: 500,
 			message: '查询失败',
-			errMsg: process.env.NODE_ENV === 'development' ? error.message : '服务器内部错误'
+			errMsg: error.message
 		};
 	}
 };
