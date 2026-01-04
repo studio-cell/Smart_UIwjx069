@@ -119,10 +119,29 @@
 <style scoped>
 	.cardstyle {
 		background-color: #fff;
-		border-radius: 12rpx;
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+		border-radius: 20rpx;
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
 		padding: 24rpx;
-		margin-bottom: 20rpx;
+		margin-bottom: 0;
+		transition: all 0.3s ease;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.cardstyle::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 4rpx;
+		background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.cardstyle:active::before {
+		opacity: 1;
 	}
 
 	.title-image-container {
@@ -133,15 +152,20 @@
 	}
 
 	.imgbox {
-		width: 120rpx;
-		height: 120rpx;
+		width: 140rpx;
+		height: 140rpx;
 		overflow: hidden;
-		border-radius: 8rpx;
+		border-radius: 16rpx;
 	}
 
 	.imgbox image {
 		width: 100%;
 		height: 100%;
+		transition: transform 0.3s ease;
+	}
+
+	.cardstyle:active .imgbox image {
+		transform: scale(1.05);
 	}
 
 	.title-wrap {
@@ -151,12 +175,17 @@
 	.title-text {
 		font-size: 32rpx;
 		font-weight: 600;
-		color: #1a1a1a;
+		color: #2c3e50;
 		line-height: 48rpx;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+		transition: color 0.3s ease;
+	}
+
+	.cardstyle:active .title-text {
+		color: #667eea;
 	}
 
 	.card-summary {
@@ -192,19 +221,23 @@
 	}
 
 	.top-tag {
-		background-color: #f00;
+		background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 		color: #fff !important;
-		padding: 4rpx 12rpx;
-		border-radius: 4rpx;
-		font-size: 22rpx;
+		padding: 6rpx 16rpx;
+		border-radius: 8rpx;
+		font-size: 20rpx;
+		font-weight: 500;
+		box-shadow: 0 2rpx 8rpx rgba(245, 87, 108, 0.3);
 	}
 
 	.ad-tag {
-		background-color: #00f;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		color: #fff !important;
-		padding: 4rpx 12rpx;
-		border-radius: 4rpx;
-		font-size: 22rpx;
+		padding: 6rpx 16rpx;
+		border-radius: 8rpx;
+		font-size: 20rpx;
+		font-weight: 500;
+		box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.3);
 	}
 
 	.time-wrap {

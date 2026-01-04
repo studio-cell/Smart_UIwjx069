@@ -498,7 +498,7 @@
 
 <style scoped>
 	.news-container {
-		background-color: #f7f7f7;
+		background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
 		min-height: 100vh;
 	}
 
@@ -507,14 +507,27 @@
 	}
 
 	.weather-card {
-		background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-		border-radius: 12rpx;
-		padding: 16rpx 20rpx;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 20rpx;
+		padding: 24rpx 28rpx;
 		color: #fff;
-		box-shadow: 0 4rpx 12rpx rgba(79, 172, 254, 0.15);
+		box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.25);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.weather-card::before {
+		content: '';
+		position: absolute;
+		top: -50rpx;
+		right: -50rpx;
+		width: 200rpx;
+		height: 200rpx;
+		background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+		border-radius: 50%;
 	}
 
 	.weather-left {
@@ -588,23 +601,26 @@
 	.news-scroll {
 		height: calc(100vh - 120rpx - 100rpx);
 		padding: 0 20rpx 20rpx;
+		background: transparent;
 	}
 
 	.update-tip {
-		background-color: #d00;
+		background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
 		color: #fff;
 		font-size: 24rpx;
 		text-align: center;
-		padding: 12rpx;
-		border-radius: 8rpx;
-		margin-bottom: 20rpx;
-		animation: fadeIn 0.3s ease;
+		padding: 16rpx 24rpx;
+		border-radius: 16rpx;
+		margin: 0 20rpx 20rpx;
+		box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.2);
+		animation: slideDown 0.4s ease;
+		font-weight: 500;
 	}
 
-	@keyframes fadeIn {
+	@keyframes slideDown {
 		from {
 			opacity: 0;
-			transform: translateY(-20rpx);
+			transform: translateY(-30rpx);
 		}
 
 		to {
@@ -629,35 +645,37 @@
 	.skeleton-img {
 		width: 120rpx;
 		height: 120rpx;
-		background: #eee;
-		border-radius: 8rpx;
-		animation: flash 1s infinite alternate;
+		background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+		background-size: 200% 100%;
+		border-radius: 16rpx;
+		animation: shimmer 1.5s infinite;
 	}
 
 	.skeleton-title {
 		flex: 1;
-		height: 30rpx;
-		background: #eee;
-		border-radius: 4rpx;
-		animation: flash 1s infinite alternate;
+		height: 32rpx;
+		background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+		background-size: 200% 100%;
+		border-radius: 8rpx;
+		animation: shimmer 1.5s infinite;
 	}
 
 	.skeleton-desc {
 		flex: 1;
-		height: 20rpx;
-		background: #eee;
-		margin-top: 10rpx;
-		border-radius: 4rpx;
-		animation: flash 1s infinite alternate;
+		height: 22rpx;
+		background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+		background-size: 200% 100%;
+		margin-top: 12rpx;
+		border-radius: 8rpx;
+		animation: shimmer 1.5s infinite;
 	}
 
-	@keyframes flash {
-		from {
-			opacity: 0.5;
+	@keyframes shimmer {
+		0% {
+			background-position: 200% 0;
 		}
-
-		to {
-			opacity: 1;
+		100% {
+			background-position: -200% 0;
 		}
 	}
 
@@ -665,16 +683,22 @@
 	.news-list {
 		display: flex;
 		flex-direction: column;
-		gap: 20rpx;
+		gap: 16rpx;
 	}
 
 	/* 提示文本样式 */
-	.loading-tip,
-	.no-more-tip {
+	.loading-tip {
 		text-align: center;
 		font-size: 24rpx;
 		color: #999;
 		padding: 20rpx 0;
+	}
+
+	.no-more-tip {
+		text-align: center;
+		font-size: 22rpx;
+		color: #ccc;
+		padding: 30rpx 0;
 	}
 
 	/* 新增空数据提示样式 */
@@ -696,13 +720,14 @@
 	}
 
 	.empty-btn {
-		width: 200rpx;
-		height: 60rpx;
-		line-height: 60rpx;
-		background: #f5f5f5;
-		color: #666;
-		font-size: 26rpx;
-		border-radius: 30rpx;
+		width: 220rpx;
+		height: 70rpx;
+		line-height: 70rpx;
+		background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+		color: #fff;
+		font-size: 28rpx;
+		border-radius: 35rpx;
+		box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
 	}
 
 	/* 广告搜索框样式 */

@@ -271,46 +271,71 @@
 	.mine-container {
 		padding: 0;
 		min-height: 100vh;
-		background-color: #f2f4f6; /* 更柔和的背景灰 */
+		background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
 	}
 
 	/* 未登录状态样式升级 */
 	.unlogin {
 		margin: 20rpx 20rpx 30rpx;
 		height: 180rpx;
-		background: #ffffff;
-		border-radius: 16rpx; /* 更大圆角更精致 */
-		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05); /* 轻微阴影增加层次感 */
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 24rpx;
+		box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.2);
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		transition: all 0.3s ease; /* 过渡动画 */
+		transition: all 0.3s ease;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.unlogin::before {
+		content: '';
+		position: absolute;
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+		animation: rotate 20s linear infinite;
+	}
+
+	@keyframes rotate {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.unlogin:active {
-		transform: scale(0.98); /* 点击缩放反馈 */
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+		transform: scale(0.98);
+		box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
 	}
 
 	.login-icon {
 		font-size: 48rpx;
 		margin-bottom: 12rpx;
-		color: #c0c4cc;
+		position: relative;
+		z-index: 1;
 	}
 
 	.login-text {
 		font-size: 30rpx;
-		color: #606266;
+		color: #fff;
 		font-weight: 500;
+		position: relative;
+		z-index: 1;
 	}
 
 	/* 已登录用户信息样式升级 */
 	.user-info {
 		margin: 20rpx 20rpx 30rpx;
-		border-radius: 16rpx;
-		overflow: hidden; /* 裁剪渐变背景圆角 */
-		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+		border-radius: 24rpx;
+		overflow: hidden;
+		box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.15);
 	}
 
 	.user-info-bg {
@@ -324,8 +349,7 @@
 		left: 0;
 		width: 100%;
 		height: 120rpx;
-		/* 柔和的蓝紫渐变 */
-		background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%);
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		z-index: 1;
 	}
 
@@ -347,13 +371,13 @@
 
 	.avatar-wrapper {
 		position: relative;
-		width: 120rpx;
-		height: 120rpx;
+		width: 130rpx;
+		height: 130rpx;
 		margin-right: 24rpx;
 		border-radius: 50%;
 		overflow: hidden;
 		border: 4rpx solid #ffffff;
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+		box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.2);
 	}
 
 	.avatar {
