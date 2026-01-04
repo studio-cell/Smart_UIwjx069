@@ -204,6 +204,14 @@
 			"style": {
 				"navigationBarTitleText": "云函数测试"
 			}
+		},
+		{
+			"path": "pages/comment/Comment",
+			"style": {
+				"navigationBarTitleText": "评论区",
+				"navigationBarBackgroundColor": "#fff",
+				"navigationBarTextStyle": "black"
+			}
 		}
 	],
 	"globalStyle": {

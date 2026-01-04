@@ -262,18 +262,20 @@
 			},
 
 			/**
-			 * 评论新闻（模拟环境下仅提示）
+			 * 评论新闻
 			 */
 			handleComment() {
-				// 模拟环境下仅提示，后续对接评论页再启用跳转
-				uni.showToast({
-					title: '进入评论区',
-					icon: 'none'
+				if (!this.news.nid) {
+					uni.showToast({
+						title: '新闻信息异常',
+						icon: 'none'
+					});
+					return;
+				}
+				// 跳转到评论页面
+				uni.navigateTo({
+					url: `/pages/comment/Comment?nid=${this.news.nid}&title=${encodeURIComponent(this.news.title)}&commentCount=${this.news.comments || 0}`
 				});
-				// 真实环境跳转代码（注释）
-				// uni.navigateTo({
-				//   url: `/pages/comment/Comment?nid=${this.news.nid}`
-				// });
 			}
 		}
 	};
