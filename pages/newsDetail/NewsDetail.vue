@@ -31,6 +31,10 @@
 				<text class="iconfont" :class="{ collected: isCollected }">★</text>
 				<text class="btn-text">{{ isCollected ? '已收藏' : '收藏' }}</text>
 			</view>
+			<view class="footer-btn" @click="handleLike">
+				<text class="iconfont" :class="{ liked: isLiked }">👍</text>
+				<text class="btn-text">{{ isLiked ? '已点赞' : '点赞' }}</text>
+			</view>
 			<view class="footer-btn" @click="handleShare">
 				<text class="iconfont">♡</text>
 				<text class="btn-text">分享</text>
@@ -51,7 +55,8 @@
 				newsList: [], // 新闻列表数据（用于返回列表时保持状态）
 				isFollowed: false, // 是否关注该作者
 				authorId: '', // 新闻作者ID（从新闻数据中获取）
-				isCollected: false // 是否收藏该新闻（新增）
+				isCollected: false, // 是否收藏该新闻（新增）
+				isLiked: false // 是否点赞该新闻（新增）
 			};
 		},
 		onLoad(options) {
@@ -66,6 +71,8 @@
 				this.isFollowed = false;
 				// 初始化收藏状态（新增）
 				this.initCollectStatus();
+				// 初始化点赞状态（新增）
+				this.initLikeStatus();
 				// 记录浏览历史
 				this.saveToHistory();
 				console.log('从列表页获取新闻数据：', JSON.parse(JSON.stringify(this.news)));
@@ -80,6 +87,8 @@
 					this.authorId = mockNews.author;
 					// 初始化收藏状态（新增）
 					this.initCollectStatus();
+					// 初始化点赞状态（新增）
+					this.initLikeStatus();
 					// 记录浏览历史
 					this.saveToHistory();
 				} else {
@@ -137,6 +146,15 @@
 				if (!this.news.nid) return;
 				const collectedNews = uni.getStorageSync('collectedNews') || [];
 				this.isCollected = collectedNews.includes(this.news.nid);
+			},
+
+			/**
+			 * 初始化点赞状态（新增）
+			 */
+			initLikeStatus() {
+				if (!this.news.nid) return;
+				const likedNews = uni.getStorageSync('likedNews') || [];
+				this.isLiked = likedNews.includes(this.news.nid);
 			},
 
 			/**
@@ -287,6 +305,39 @@
 			},
 
 			/**
+			 * 点赞新闻（新增）
+			 */
+			handleLike() {
+				const userInfo = uni.getStorageSync('userInfo');
+				if (!userInfo?.isLogin) {
+					uni.showToast({
+						title: '请先登录',
+						icon: 'none'
+					});
+					return;
+				}
+				// 模拟点赞：本地存储记录已点赞的新闻ID
+				let likedNews = uni.getStorageSync('likedNews') || [];
+				const isLiked = likedNews.includes(this.news.nid);
+				if (isLiked) {
+					likedNews = likedNews.filter(id => id !== this.news.nid);
+					this.isLiked = false; // 更新本地状态
+					uni.showToast({
+						title: '取消点赞成功',
+						icon: 'success'
+					});
+				} else {
+					likedNews.push(this.news.nid);
+					this.isLiked = true; // 更新本地状态
+					uni.showToast({
+						title: '点赞成功',
+						icon: 'success'
+					});
+				}
+				uni.setStorageSync('likedNews', likedNews);
+			},
+
+			/**
 			 * 分享新闻（模拟环境下仅提示）
 			 */
 			handleShare() {
@@ -418,6 +469,11 @@
 	/* 新增收藏状态样式 */
 	.iconfont.collected {
 		color: #ff9900;
+	}
+
+	/* 新增点赞状态样式 */
+	.iconfont.liked {
+		color: #e63946;
 	}
 
 	.btn-text {
