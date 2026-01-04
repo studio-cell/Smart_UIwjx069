@@ -218,6 +218,12 @@
 			"style": {
 				"navigationBarTitleText": "评论功能测试"
 			}
+		},
+		{
+			"path": "pages/test-news/test-news",
+			"style": {
+				"navigationBarTitleText": "新闻列表测试"
+			}
 		}
 	],
 	"globalStyle": {

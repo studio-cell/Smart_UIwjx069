@@ -113,7 +113,13 @@
 		onLoad() {
 			this.getWeather();
 			this.getNewsCategories();
-			this.getNewsList();
+			this.getNewsList(true, false); // 初始加载时传入 true, false（不显示刷新提示）
+		},
+		onShow() {
+			// 每次显示页面时打印调试信息
+			console.log('当前新闻列表数量:', this.newsList.length);
+			console.log('当前分类:', this.categories[this.currentTab]);
+			console.log('过滤后新闻数量:', this.filteredNews.length);
 		},
 		methods: {
 			/**
@@ -196,8 +202,9 @@
 			/**
 			 * 获取新闻列表
 			 * @param {Boolean} isRefresh - 是否为刷新操作
+			 * @param {Boolean} showTip - 是否显示更新提示（初始加载时不显示）
 			 */
-			async getNewsList(isRefresh = false) {
+			async getNewsList(isRefresh = false, showTip = true) {
 				// 防止重复请求
 				if ((isRefresh && this.isRefreshing) || (!isRefresh && this.loadingMore)) return;
 
@@ -205,7 +212,7 @@
 					this.page = 1;
 					this.noMore = false;
 					this.isRefreshing = true;
-					this.showUpdateTip = true;
+					this.showUpdateTip = showTip; // 根据参数决定是否显示提示
 				} else {
 					this.loadingMore = true;
 				}
@@ -225,10 +232,13 @@
 					}
 
 					// 调用云函数获取新闻列表
+					console.log('调用云函数，参数：', queryData);
 					const res = await uniCloud.callFunction({
 						name: 'news-getList',
 						data: queryData
 					});
+
+					console.log('云函数返回结果：', res.result);
 
 					if (res.result.code === 200) {
 						const newsData = res.result.data.list.map(item => ({
@@ -244,6 +254,15 @@
 							content: item.content, // 添加content字段
 							isTop: item.is_top
 						}));
+
+						console.log('解析后的新闻数据数量：', newsData.length);
+						console.log('解析后的新闻数据：', newsData);
+
+						// 如果返回的数据太少（少于3条），可能有问题，使用本地数据
+						if (newsData.length < 3 && res.result.data.total < 3) {
+							console.warn('云数据库数据量不足，使用本地模拟数据');
+							throw new Error('数据量不足');
+						}
 
 						if (isRefresh) {
 							this.newsList = newsData;
@@ -261,6 +280,7 @@
 				} catch (error) {
 					console.error('获取新闻列表失败，使用本地模拟数据：', error);
 					// 云函数失败时，使用本地模拟数据
+					const category = this.categories[this.currentTab] || "推荐";
 					this.getMockNewsList(isRefresh, category);
 				} finally {
 					this.isRefreshing = false;
@@ -363,6 +383,7 @@
 					filteredList = mockNewsList.filter(n => n.category === category);
 				}
 
+				// 更新新闻列表
 				if (isRefresh) {
 					this.newsList = filteredList;
 					this.updateCount = filteredList.length;
@@ -372,6 +393,12 @@
 						icon: 'none'
 					});
 				} else {
+					// 初始加载或加载更多时也要更新列表
+					if (this.page === 1) {
+						this.newsList = filteredList;
+					} else {
+						this.newsList = [...this.newsList, ...filteredList];
+					}
 					this.noMore = true; // 模拟数据只有一页
 				}
 			},
