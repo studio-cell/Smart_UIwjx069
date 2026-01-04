@@ -210,101 +210,67 @@
 					this.loadingMore = true;
 				}
 
-				// 模拟新闻数据（可注释掉下面的mock数据，测试空数据提示效果）
-				const mockNewsList = [{
-						nid: 'n1001',
-						title: '2025央行降准0.5个百分点，释放长期资金约1万亿元',
-						author: '财经时报',
-						comments: 1256,
-						createTime: new Date(Date.now() - 2 * 60 * 60 * 1000).getTime(), // 2小时前
-						category: '财经',
-						cover: 'https://picsum.photos/400/200?random=1',
-						summary: '央行今日宣布降准，旨在支持实体经济发展，降低企业融资成本...',
-						isTop: true
-					},
-					{
-						nid: 'n1002',
-						title: '2025亚运会中国队斩获第100枚金牌，创历史新高',
-						author: '体育周报',
-						comments: 8950,
-						createTime: new Date(Date.now() - 5 * 60 * 1000).getTime(), // 5分钟前
-						category: '体育',
-						cover: 'https://picsum.photos/400/200?random=2',
-						summary: '在刚刚结束的亚运会比赛中，中国队在跳水项目再夺一金，金牌总数突破100枚...',
-						isTop: false
-					},
-					{
-						nid: 'n1003',
-						title: '人工智能大模型迎来重大突破，可自主完成复杂任务',
-						author: '科技前沿',
-						comments: 3580,
-						createTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).getTime(), // 1天前
-						category: '科技',
-						cover: 'https://picsum.photos/400/200?random=3',
-						summary: '国内科技企业发布新一代AI大模型，具备自主学习和决策能力，应用场景覆盖多个领域...',
-						isTop: false
-					},
-					{
-						nid: 'n1004',
-						title: '2025全国两会重点关注民生问题，多领域政策将调整',
-						author: '时政新闻',
-						comments: 6890,
-						createTime: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).getTime(), // 35天前
-						category: '时政',
-						cover: 'https://picsum.photos/400/200?random=4',
-						summary: '全国两会即将召开，教育、医疗、养老等民生议题成为关注焦点...',
-						isTop: true
-					},
-					{
-						nid: 'n1005',
-						title: '热门电影票房突破50亿，成年度票房冠军',
-						author: '娱乐星探',
-						comments: 9870,
-						createTime: new Date(Date.now() - 10 * 1000).getTime(), // 10秒前
-						category: '娱乐',
-						cover: 'https://picsum.photos/400/200?random=5',
-						summary: '某国产电影上映10天票房突破50亿，刷新多项票房纪录...',
-						isTop: false
-					},
-					{
-						nid: 'ad1001',
-						title: '【广告】新款智能手机限时特惠，立减800元',
-						author: '品牌官方',
-						comments: 0,
-						createTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime(), // 7天前
-						category: '广告',
-						cover: 'https://picsum.photos/400/200?random=6',
-						summary: '新款旗舰手机搭载最新处理器，限时优惠活动进行中...',
-						isTop: false
-					}
-				];
+				try {
+					// 获取当前分类
+					const category = this.categories[this.currentTab] || "推荐";
+					// 构建查询参数
+					const queryData = {
+						page: this.page,
+						pageSize: this.pageSize,
+					};
 
-				// 模拟接口请求延迟
-				setTimeout(() => {
-					if (isRefresh) {
-						this.newsList = mockNewsList;
-						this.updateCount = mockNewsList.length;
-						// 3秒后隐藏更新提示
-						setTimeout(() => this.showUpdateTip = false, 3000);
-					} else {
-						const moreNews = [{
-							nid: `n_new_${Date.now()}`,
-							title: '新能源汽车补贴政策调整，购车可享更多优惠',
-							author: '汽车之家',
-							comments: 1200,
-							createTime: new Date().getTime(), // 刚刚
-							category: '财经',
-							cover: 'https://picsum.photos/400/200?random=7',
-							summary: '最新新能源汽车补贴政策出台，续航超600km车型补贴提高...',
-							isTop: false
-						}];
-						this.newsList = [...this.newsList, ...moreNews];
-						this.noMore = true;
+					// 非推荐分类才传category参数
+					if (category !== "推荐") {
+						queryData.category = category;
 					}
+
+					// 调用云函数获取新闻列表
+					const res = await uniCloud.callFunction({
+						name: 'news-getList',
+						data: queryData
+					});
+
+					if (res.result.code === 200) {
+						const newsData = res.result.data.list.map(item => ({
+							nid: item._id,
+							title: item.title,
+							author: item.author,
+							comments: item.comments_count || 0,
+							time: this.formatTime(item.publish_time),
+							createTime: item.publish_time,
+							category: item.category,
+							cover: item.cover,
+							summary: item.summary,
+							isTop: item.is_top
+						}));
+
+						if (isRefresh) {
+							this.newsList = newsData;
+							this.updateCount = newsData.length;
+							setTimeout(() => this.showUpdateTip = false, 3000);
+						} else {
+							this.newsList = [...this.newsList, ...newsData];
+						}
+
+						// 判断是否还有更多数据
+						this.noMore = this.newsList.length >= res.result.data.total;
+					} else {
+						uni.showToast({
+							title: res.result.message || '获取新闻失败',
+							icon: 'none'
+						});
+					}
+				} catch (error) {
+					console.error('获取新闻列表失败：', error);
+					uni.showToast({
+						title: '网络异常，请重试',
+						icon: 'none'
+					});
+				} finally {
 					this.isRefreshing = false;
 					this.loadingMore = false;
 					this.isTabChanging = false;
-				}, 1000);
+				}
 			},
 
 			/**

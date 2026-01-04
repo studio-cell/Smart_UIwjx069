@@ -198,6 +198,12 @@
 			"style": {
 				"navigationBarTitleText": "我的评论"
 			}
+		},
+		{
+			"path": "pages/test-cloud/test-cloud",
+			"style": {
+				"navigationBarTitleText": "云函数测试"
+			}
 		}
 	],
 	"globalStyle": {
