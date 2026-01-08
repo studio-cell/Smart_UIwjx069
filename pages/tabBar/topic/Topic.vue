@@ -332,18 +332,38 @@
 						{
 							_id: 'v1001',
 							vid: 'v1001',
-							title: '话题相关视频1',
-							cover: 'https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250',
+							title: '话题相关视频1 - 深度解读',
+							cover: '/static/news/finance1.jpg',
 							duration: '05:28',
-							playCount: '12.5万'
+							playCount: '12.5万',
+							url: 'https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/bili-test-video/finance-demo1.mp4'
 						},
 						{
 							_id: 'v1002',
 							vid: 'v1002',
-							title: '话题相关视频2',
-							cover: 'https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250',
+							title: '话题相关视频2 - 实况回放',
+							cover: '/static/news/sports1.png',
 							duration: '08:15',
-							playCount: '89.8万'
+							playCount: '89.8万',
+							url: 'https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/bili-test-video/sports-demo1.mp4'
+						},
+						{
+							_id: 'v1003',
+							vid: 'v1003',
+							title: '话题相关视频3 - 技术前沿',
+							cover: '/static/news/tech1.jpg',
+							duration: '12:40',
+							playCount: '56.3万',
+							url: 'https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/bili-test-video/tech-demo1.mp4'
+						},
+						{
+							_id: 'v1004',
+							vid: 'v1004',
+							title: '话题相关视频4 - 政策解读',
+							cover: '/static/news/politics1.jpg',
+							duration: '06:50',
+							playCount: '78.2万',
+							url: 'https://sf1-cdn-tos.huoshanstatic.com/obj/media-fe/bili-test-video/politics-demo1.mp4'
 						}
 					];
 
