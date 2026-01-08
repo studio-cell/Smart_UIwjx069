@@ -3,8 +3,12 @@
 		<TabBanner :list="topicCategories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
 		<view class="search-bar">
-			<input class="search-input" v-model="searchKeyword" placeholder="搜索话题..." @confirm="handleSearch" />
-			<text class="search-btn" @click="handleSearch">🔍</text>
+			<view class="search-input-wrapper">
+				<text class="search-icon">🔍</text>
+				<input class="search-input" v-model="searchKeyword" placeholder="搜索话题标题或标签..." @confirm="handleSearch" />
+				<text class="search-clear" v-if="searchKeyword" @click="clearSearch">✕</text>
+			</view>
+			<view class="search-btn" @click="handleSearch">搜索</view>
 		</view>
 
 		<scroll-view scroll-y class="topic-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
@@ -208,12 +212,23 @@
 					this.currentTab = index;
 					this.searchKeyword = '';
 					this.searchResults = [];
+					this.currentTopic = null;
+					this.topicVideos = [];
 					this.loadTopics();
 				}
+			},
+			clearSearch() {
+				this.searchKeyword = '';
+				this.searchResults = [];
 			},
 			async handleSearch() {
 				if (!this.searchKeyword.trim()) {
 					this.searchResults = [];
+					uni.showToast({
+						title: '请输入搜索关键词',
+						icon: 'none',
+						duration: 1500
+					});
 					return;
 				}
 
@@ -255,6 +270,20 @@
 						topic.title.toLowerCase().includes(keyword) ||
 						topic.tag.toLowerCase().includes(keyword)
 					);
+
+					if (this.searchResults.length === 0) {
+						uni.showToast({
+							title: '未找到相关话题',
+							icon: 'none',
+							duration: 2000
+						});
+					} else {
+						uni.showToast({
+							title: `找到${this.searchResults.length}个相关话题`,
+							icon: 'none',
+							duration: 1500
+						});
+					}
 				} finally {
 					this.loading = false;
 				}
@@ -361,21 +390,67 @@
 		padding: 20rpx;
 		background: #fff;
 		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+		gap: 20rpx;
+	}
+
+	.search-input-wrapper {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+		border-radius: 40rpx;
+		padding: 0 20rpx;
+		height: 70rpx;
+		border: 2rpx solid #e0e0e0;
+		transition: all 0.3s ease;
+	}
+
+	.search-input-wrapper:focus-within {
+		border-color: #667eea;
+		box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.1);
+	}
+
+	.search-icon {
+		font-size: 28rpx;
+		margin-right: 10rpx;
 	}
 
 	.search-input {
 		flex: 1;
 		height: 70rpx;
-		background: #f5f5f5;
-		border-radius: 35rpx;
-		padding: 0 30rpx;
+		background: transparent;
 		font-size: 28rpx;
+		color: #333;
+	}
+
+	.search-input::placeholder {
+		color: #999;
+	}
+
+	.search-clear {
+		font-size: 32rpx;
+		color: #999;
+		padding: 10rpx;
+		margin-left: 10rpx;
 	}
 
 	.search-btn {
-		margin-left: 20rpx;
-		font-size: 32rpx;
-		padding: 10rpx;
+		padding: 0 30rpx;
+		height: 70rpx;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: #fff;
+		border-radius: 35rpx;
+		font-size: 28rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+		transition: all 0.3s ease;
+	}
+
+	.search-btn:active {
+		transform: scale(0.95);
+		box-shadow: 0 2rpx 6rpx rgba(102, 126, 234, 0.3);
 	}
 
 	.loading-tip {
