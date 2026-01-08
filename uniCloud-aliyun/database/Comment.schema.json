@@ -1,0 +1,51 @@
+{
+	"bsonType": "object",
+	"description": "评论表：存储新闻评论，关联用户和新闻",
+	"required": ["newsId", "content"],
+	"permission": {
+		"read": true,
+		"create": true,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "评论ID，系统自动生成"
+		},
+		"newsId": {
+			"bsonType": "string",
+			"title": "关联新闻ID",
+			"description": "关联到News表的_id"
+		},
+		"userId": {
+			"bsonType": "string",
+			"title": "评论用户ID",
+			"description": "评论者的用户ID"
+		},
+		"username": {
+			"bsonType": "string",
+			"title": "用户名",
+			"description": "评论时的用户名"
+		},
+		"content": {
+			"bsonType": "string",
+			"title": "评论内容",
+			"trim": "both",
+			"maxLength": 500,
+			"minLength": 1
+		},
+		"time": {
+			"bsonType": "timestamp",
+			"title": "评论时间",
+			"forceDefaultValue": {
+				"$env": "now"
+			}
+		},
+		"likeCount": {
+			"bsonType": "int",
+			"title": "点赞数",
+			"default": 0,
+			"minimum": 0
+		}
+	}
+}

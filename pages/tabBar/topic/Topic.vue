@@ -2,12 +2,19 @@
 	<view class="topic-container">
 		<TabBanner :list="topicCategories" :current="currentTab" @tab-click="handleTabClick"></TabBanner>
 
+		<view class="search-bar">
+			<input class="search-input" v-model="searchKeyword" placeholder="搜索话题..." @confirm="handleSearch" />
+			<text class="search-btn" @click="handleSearch">🔍</text>
+		</view>
+
 		<scroll-view scroll-y class="topic-scroll" @scrolltoupper="onPullDownRefresh" refresher-enabled
 			:refresher-threshold="100">
 			<view v-if="showUpdateTip" class="update-tip">为您更新了{{ updateCount }}个热门话题</view>
 
+			<view v-if="loading" class="loading-tip">加载中...</view>
+
 			<view class="topic-list">
-				<view class="topic-card" v-for="(topic, index) in filteredTopics" :key="topic.tid"
+				<view class="topic-card" v-for="(topic, index) in displayTopics" :key="topic._id"
 					@click="loadTopicVideos(topic)">
 					<view class="topic-tag" :style="{ backgroundColor: tagColorList[index % tagColorList.length] }">
 						{{ topic.tag }}
@@ -18,7 +25,7 @@
 						<text class="stat-item">💬 {{ topic.commentCount }}条评论</text>
 						<text class="stat-item">❤️ {{ topic.likeCount }}人关注</text>
 					</view>
-					<view class="topic-time">最后更新：{{ topic.updateTime }}</view>
+					<view class="topic-time">最后更新：{{ formatTime(topic.updateTime) }}</view>
 				</view>
 			</view>
 
@@ -39,7 +46,7 @@
 				</view>
 			</view>
 
-			<view v-if="filteredTopics.length === 0 && !loadingMore" class="empty-tip">暂无该分类的话题内容</view>
+			<view v-if="displayTopics.length === 0 && !loading" class="empty-tip">{{ searchKeyword ? '未找到相关话题' : '暂无该分类的话题内容' }}</view>
 		</scroll-view>
 
 		<view v-if="showPlayer" class="video-player-mask" @click="closePlayer">
@@ -59,95 +66,208 @@
 		data() {
 			return {
 				topicCategories: ['推荐', '时政', '财经', '娱乐', '体育', '科技', '民生'],
-				topicList: [{
-						tid: 't1001',
-						title: '2025央行降准对普通人有哪些影响？',
-						tag: '财经热议',
-						hotValue: '89.6万',
-						commentCount: 12580,
-						likeCount: 86500,
-						updateTime: '2025-10-26 18:30',
-						category: '财经',
-						topicId: 'topic_finance_001'
-					},
-					{
-						tid: 't1002',
-						title: '2025亚运会中国队金牌数创新高',
-						tag: '体育热点',
-						hotValue: '156.8万',
-						commentCount: 28960,
-						likeCount: 198700,
-						updateTime: '2025-10-26 20:15',
-						category: '体育',
-						topicId: 'topic_sports_001'
-					},
-					{
-						tid: 't1003',
-						title: '人工智能能否替代人类完成创意工作？',
-						tag: '科技讨论',
-						hotValue: '123.5万',
-						commentCount: 35680,
-						likeCount: 156300,
-						updateTime: '2025-10-26 19:40',
-						category: '科技',
-						topicId: 'topic_tech_001'
-					},
-					{
-						tid: 't1004',
-						title: '2025全国两会民生政策解读',
-						tag: '时政聚焦',
-						hotValue: '210.3万',
-						commentCount: 42580,
-						likeCount: 289500,
-						updateTime: '2025-10-26 17:20',
-						category: '时政',
-						topicId: 'topic_politics_001'
-					},
-					{
-						tid: 't1005',
-						title: '某顶流明星疑似塌房，工作室紧急回应',
-						tag: '娱乐八卦',
-						hotValue: '358.9万',
-						commentCount: 89650,
-						likeCount: 458200,
-						updateTime: '2025-10-26 21:05',
-						category: '娱乐',
-						topicId: 'topic_ent_001'
-					},
-					{
-						tid: 't1006',
-						title: '多地出台租房新规，保障租客权益',
-						tag: '民生关注',
-						hotValue: '98.7万',
-						commentCount: 18560,
-						likeCount: 96800,
-						updateTime: '2025-10-26 16:45',
-						category: '民生',
-						topicId: 'topic_life_001'
-					}
-				],
+				topicList: [],
 				currentTab: 0,
 				showUpdateTip: false,
 				updateCount: 0,
 				tagColorList: ['#e53935', '#1e88e5', '#43a047', '#f57c00', '#8e24aa', '#00acc1'],
 				currentTopic: null,
 				topicVideos: [],
+				loading: false,
 				loadingMore: false,
 				showPlayer: false,
-				currentVideo: {}
+				currentVideo: {},
+				searchKeyword: '',
+				searchResults: []
 			};
 		},
 		computed: {
-			filteredTopics() {
-				const category = this.topicCategories[this.currentTab];
-				return category === "推荐" ?
-					this.topicList :
-					this.topicList.filter(topic => topic.category === category);
+			displayTopics() {
+				console.log('当前话题列表数量:', this.topicList.length);
+				console.log('当前分类:', this.topicCategories[this.currentTab]);
+				console.log('显示的话题数量:', this.searchKeyword ? this.searchResults.length : this.topicList.length);
+
+				if (this.searchKeyword) {
+					return this.searchResults;
+				}
+				return this.topicList;
 			}
 		},
 		methods: {
+			async loadTopics(refresh = false) {
+				this.loading = true;
+				const category = this.topicCategories[this.currentTab];
+
+				try {
+					const res = await uniCloud.callFunction({
+						name: 'topic-getList',
+						data: {
+							category,
+							page: 1,
+							pageSize: 20
+						}
+					});
+
+					console.log('话题云函数返回结果：', res.result);
+
+					if (res.result.code === 200) {
+						console.log('解析后的话题数据数量：', res.result.data.list.length);
+						console.log('解析后的话题数据：', res.result.data.list);
+
+						if (!res.result.data.list || res.result.data.list.length === 0) {
+							console.log('云数据库数据量不足，使用本地模拟数据');
+							throw new Error('数据量不足');
+						}
+
+						this.topicList = res.result.data.list.map(topic => ({
+							...topic,
+							topicId: topic._id
+						}));
+					} else {
+						uni.showToast({
+							title: res.result.message || '加载失败',
+							icon: 'none'
+						});
+					}
+				} catch (error) {
+					console.error('获取话题列表失败，使用本地模拟数据：', error);
+
+					const mockTopics = [
+						{
+							_id: 't1001',
+							title: '2025央行降准对普通人有哪些影响？',
+							tag: '财经热议',
+							hotValue: '89.6万',
+							commentCount: 12580,
+							likeCount: 86500,
+							updateTime: new Date('2025-10-26 18:30').getTime(),
+							category: '财经'
+						},
+						{
+							_id: 't1002',
+							title: '2025亚运会中国队金牌数创新高',
+							tag: '体育热点',
+							hotValue: '156.8万',
+							commentCount: 28960,
+							likeCount: 198700,
+							updateTime: new Date('2025-10-26 20:15').getTime(),
+							category: '体育'
+						},
+						{
+							_id: 't1003',
+							title: '人工智能能否替代人类完成创意工作？',
+							tag: '科技讨论',
+							hotValue: '123.5万',
+							commentCount: 35680,
+							likeCount: 156300,
+							updateTime: new Date('2025-10-26 19:40').getTime(),
+							category: '科技'
+						},
+						{
+							_id: 't1004',
+							title: '2025全国两会民生政策解读',
+							tag: '时政聚焦',
+							hotValue: '210.3万',
+							commentCount: 42580,
+							likeCount: 289500,
+							updateTime: new Date('2025-10-26 17:20').getTime(),
+							category: '时政'
+						},
+						{
+							_id: 't1005',
+							title: '某顶流明星疑似塌房，工作室紧急回应',
+							tag: '娱乐八卦',
+							hotValue: '358.9万',
+							commentCount: 89650,
+							likeCount: 458200,
+							updateTime: new Date('2025-10-26 21:05').getTime(),
+							category: '娱乐'
+						},
+						{
+							_id: 't1006',
+							title: '多地出台租房新规，保障租客权益',
+							tag: '民生关注',
+							hotValue: '98.7万',
+							commentCount: 18560,
+							likeCount: 96800,
+							updateTime: new Date('2025-10-26 16:45').getTime(),
+							category: '民生'
+						}
+					];
+
+					this.topicList = mockTopics.map(topic => ({
+						...topic,
+						topicId: topic._id
+					}));
+				} finally {
+					this.loading = false;
+				}
+			},
 			handleTabClick(index) {
-				this.currentTab = index;
+				if (this.currentTab !== index) {
+					this.currentTab = index;
+					this.searchKeyword = '';
+					this.searchResults = [];
+					this.loadTopics();
+				}
+			},
+			async handleSearch() {
+				if (!this.searchKeyword.trim()) {
+					this.searchResults = [];
+					return;
+				}
+
+				this.loading = true;
+
+				try {
+					const res = await uniCloud.callFunction({
+						name: 'topic-getList',
+						data: {
+							keyword: this.searchKeyword.trim(),
+							page: 1,
+							pageSize: 20
+						}
+					});
+
+					console.log('搜索云函数返回结果：', res.result);
+
+					if (res.result.code === 200) {
+						if (!res.result.data.list || res.result.data.list.length === 0) {
+							throw new Error('搜索结果为空');
+						}
+
+						this.searchResults = res.result.data.list.map(topic => ({
+							...topic,
+							topicId: topic._id
+						}));
+					} else {
+						uni.showToast({
+							title: res.result.message || '搜索失败',
+							icon: 'none'
+						});
+					}
+				} catch (error) {
+					console.error('搜索话题失败，使用本地过滤：', error);
+
+					const keyword = this.searchKeyword.trim().toLowerCase();
+
+					this.searchResults = this.topicList.filter(topic =>
+						topic.title.toLowerCase().includes(keyword) ||
+						topic.tag.toLowerCase().includes(keyword)
+					);
+				} finally {
+					this.loading = false;
+				}
+			},
+			formatTime(timestamp) {
+				if (!timestamp) return '';
+				const date = new Date(timestamp);
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				const hour = String(date.getHours()).padStart(2, '0');
+				const minute = String(date.getMinutes()).padStart(2, '0');
+				return `${year}-${month}-${day} ${hour}:${minute}`;
 			},
 			async loadTopicVideos(topic) {
 				this.currentTopic = topic;
@@ -157,13 +277,18 @@
 					const res = await uniCloud.callFunction({
 						name: 'topic-getVideoList',
 						data: {
-							topicId: topic.topicId,
+							topicId: topic.topicId || topic._id,
 							page: 1,
 							pageSize: 10
 						}
 					});
 
+					console.log('话题视频云函数返回结果：', res.result);
+
 					if (res.result.code === 200) {
+						if (!res.result.data.list || res.result.data.list.length === 0) {
+							throw new Error('视频数据为空');
+						}
 						this.topicVideos = res.result.data.list;
 					} else {
 						uni.showToast({
@@ -172,11 +297,28 @@
 						});
 					}
 				} catch (error) {
-					console.error('获取话题视频失败：', error);
-					uni.showToast({
-						title: '加载失败',
-						icon: 'none'
-					});
+					console.error('获取话题视频失败，使用本地模拟数据：', error);
+
+					const mockVideos = [
+						{
+							_id: 'v1001',
+							vid: 'v1001',
+							title: '话题相关视频1',
+							cover: 'https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250',
+							duration: '05:28',
+							playCount: '12.5万'
+						},
+						{
+							_id: 'v1002',
+							vid: 'v1002',
+							title: '话题相关视频2',
+							cover: 'https://img.ixintu.com/download/jpg/202308/15/64dc482230082.jpg!fd250',
+							duration: '08:15',
+							playCount: '89.8万'
+						}
+					];
+
+					this.topicVideos = mockVideos;
 				} finally {
 					this.loadingMore = false;
 				}
@@ -192,42 +334,11 @@
 				uni.showTabBar();
 			},
 			onPullDownRefresh() {
-				setTimeout(() => {
-					const newTopics = [{
-							tid: `t_new_${Date.now()}_1`,
-							title: "新能源汽车购置税减免政策延长，买车更划算？",
-							tag: "财经热议",
-							hotValue: "78.5万",
-							commentCount: 9850,
-							likeCount: 76300,
-							updateTime: '2025-10-26 22:10',
-							category: "财经",
-							topicId: 'topic_finance_002'
-						},
-						{
-							tid: `t_new_${Date.now()}_2`,
-							title: "国产大模型再次突破，可支持千亿级参数训练",
-							tag: "科技前沿",
-							hotValue: "189.2万",
-							commentCount: 25680,
-							likeCount: 168900,
-							updateTime: '2025-10-26 22:05',
-							category: "科技",
-							topicId: 'topic_tech_002'
-						}
-					];
-					this.topicList = [...newTopics, ...this.topicList];
-					this.updateCount = newTopics.length;
-					this.showUpdateTip = true;
-					uni.stopPullDownRefresh();
-					setTimeout(() => {
-						this.showUpdateTip = false;
-					}, 3000);
-					uni.showTabBarRedDot({
-						index: 2
-					});
-				}, 1500);
+				this.loadTopics(true);
 			}
+		},
+		onLoad() {
+			this.loadTopics();
 		},
 		onHide() {
 			// TabBar页面不支持 hideTabBarRedDot，注释掉
@@ -244,8 +355,38 @@
 		min-height: 100vh;
 	}
 
+	.search-bar {
+		display: flex;
+		align-items: center;
+		padding: 20rpx;
+		background: #fff;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+	}
+
+	.search-input {
+		flex: 1;
+		height: 70rpx;
+		background: #f5f5f5;
+		border-radius: 35rpx;
+		padding: 0 30rpx;
+		font-size: 28rpx;
+	}
+
+	.search-btn {
+		margin-left: 20rpx;
+		font-size: 32rpx;
+		padding: 10rpx;
+	}
+
+	.loading-tip {
+		text-align: center;
+		padding: 40rpx;
+		color: #999;
+		font-size: 28rpx;
+	}
+
 	.topic-scroll {
-		height: calc(100vh - 120rpx);
+		height: calc(100vh - 200rpx);
 		padding: 0 20rpx 20rpx;
 	}
 

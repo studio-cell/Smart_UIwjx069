@@ -1,0 +1,73 @@
+{
+	"bsonType": "object",
+	"description": "话题表：存储热门话题信息",
+	"required": ["title", "tag", "category"],
+	"permission": {
+		"read": true,
+		"create": true,
+		"update": true,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "话题ID，系统自动生成"
+		},
+		"title": {
+			"bsonType": "string",
+			"title": "话题标题",
+			"description": "话题的标题内容",
+			"trim": "both",
+			"maxLength": 200,
+			"minLength": 1
+		},
+		"tag": {
+			"bsonType": "string",
+			"title": "话题标签",
+			"description": "话题的标签分类",
+			"trim": "both",
+			"maxLength": 50
+		},
+		"category": {
+			"bsonType": "string",
+			"title": "话题分类",
+			"description": "话题所属分类：时政、财经、娱乐、体育、科技、民生",
+			"enum": ["时政", "财经", "娱乐", "体育", "科技", "民生"]
+		},
+		"hotValue": {
+			"bsonType": "string",
+			"title": "热度值",
+			"description": "话题的热度数值",
+			"default": "0"
+		},
+		"commentCount": {
+			"bsonType": "int",
+			"title": "评论数",
+			"description": "话题的评论数量",
+			"default": 0,
+			"minimum": 0
+		},
+		"likeCount": {
+			"bsonType": "int",
+			"title": "关注数",
+			"description": "关注该话题的用户数量",
+			"default": 0,
+			"minimum": 0
+		},
+		"updateTime": {
+			"bsonType": "timestamp",
+			"title": "更新时间",
+			"description": "话题最后更新时间",
+			"forceDefaultValue": {
+				"$env": "now"
+			}
+		},
+		"createTime": {
+			"bsonType": "timestamp",
+			"title": "创建时间",
+			"description": "话题创建时间",
+			"forceDefaultValue": {
+				"$env": "now"
+			}
+		}
+	}
+}

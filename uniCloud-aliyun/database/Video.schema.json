@@ -1,0 +1,89 @@
+{
+	"bsonType": "object",
+	"description": "视频表：存储视频信息，可关联话题",
+	"required": ["title", "url", "cover"],
+	"permission": {
+		"read": true,
+		"create": true,
+		"update": true,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "视频ID，系统自动生成"
+		},
+		"title": {
+			"bsonType": "string",
+			"title": "视频标题",
+			"description": "视频的标题",
+			"trim": "both",
+			"maxLength": 200,
+			"minLength": 1
+		},
+		"url": {
+			"bsonType": "string",
+			"title": "视频地址",
+			"description": "视频文件的URL地址"
+		},
+		"cover": {
+			"bsonType": "string",
+			"title": "封面图片",
+			"description": "视频封面图URL"
+		},
+		"duration": {
+			"bsonType": "string",
+			"title": "视频时长",
+			"description": "视频时长，格式如 05:28",
+			"maxLength": 10
+		},
+		"playCount": {
+			"bsonType": "string",
+			"title": "播放量",
+			"description": "视频播放次数",
+			"default": "0"
+		},
+		"author": {
+			"bsonType": "string",
+			"title": "作者",
+			"description": "视频作者"
+		},
+		"authorAvatar": {
+			"bsonType": "string",
+			"title": "作者头像",
+			"description": "作者头像URL"
+		},
+		"category": {
+			"bsonType": "string",
+			"title": "视频分类",
+			"description": "视频所属分类：时政、财经、娱乐、体育、科技",
+			"enum": ["时政", "财经", "娱乐", "体育", "科技"]
+		},
+		"topicId": {
+			"bsonType": "string",
+			"title": "关联话题ID",
+			"description": "关联的话题ID，用于话题关联视频"
+		},
+		"likeCount": {
+			"bsonType": "int",
+			"title": "点赞数",
+			"description": "视频点赞数",
+			"default": 0,
+			"minimum": 0
+		},
+		"collectCount": {
+			"bsonType": "int",
+			"title": "收藏数",
+			"description": "视频收藏数",
+			"default": 0,
+			"minimum": 0
+		},
+		"createTime": {
+			"bsonType": "timestamp",
+			"title": "创建时间",
+			"description": "视频创建时间",
+			"forceDefaultValue": {
+				"$env": "now"
+			}
+		}
+	}
+}

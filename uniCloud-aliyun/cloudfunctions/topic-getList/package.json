@@ -1,0 +1,7 @@
+{
+  "name": "topic-getList",
+  "version": "1.0.0",
+  "description": "获取话题列表",
+  "main": "index.js",
+  "dependencies": {}
+}
