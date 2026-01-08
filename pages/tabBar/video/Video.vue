@@ -216,9 +216,10 @@
 			this.getUserCollectVideoList();
 		},
 		onHide() {
-			uni.hideTabBarRedDot({
-				index: 1
-			});
+			// TabBar页面不支持 hideTabBarRedDot，注释掉
+			// uni.hideTabBarRedDot({
+			// 	index: 1
+			// });
 			this.closePlayer();
 		},
 		onBackPress() {

@@ -230,9 +230,10 @@
 			}
 		},
 		onHide() {
-			uni.hideTabBarRedDot({
-				index: 2
-			});
+			// TabBar页面不支持 hideTabBarRedDot，注释掉
+			// uni.hideTabBarRedDot({
+			// 	index: 2
+			// });
 		}
 	};
 </script>

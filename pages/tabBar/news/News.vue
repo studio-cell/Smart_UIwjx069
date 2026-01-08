@@ -484,9 +484,10 @@
 			}
 		},
 		onHide() {
-			uni.hideTabBarRedDot({
-				index: 0
-			});
+			// TabBar页面不支持 hideTabBarRedDot，注释掉
+			// uni.hideTabBarRedDot({
+			// 	index: 0
+			// });
 		},
 		onUnmounted() {
 			this.isRefreshing = false;
