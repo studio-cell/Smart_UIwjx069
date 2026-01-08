@@ -239,30 +239,32 @@
 
 <style scoped>
 	.topic-container {
-		background-color: #f7f7f7;
+		background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
 		min-height: 100vh;
 	}
 
 	.topic-scroll {
 		height: calc(100vh - 120rpx);
-		padding: 20rpx;
+		padding: 0 20rpx 20rpx;
 	}
 
 	.update-tip {
-		background-color: #d00;
+		background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
 		color: #fff;
 		font-size: 24rpx;
 		text-align: center;
-		padding: 12rpx;
-		border-radius: 8rpx;
-		margin-bottom: 20rpx;
-		animation: fadeIn 0.3s ease;
+		padding: 16rpx 24rpx;
+		border-radius: 16rpx;
+		margin: 0 20rpx 20rpx;
+		box-shadow: 0 4rpx 12rpx rgba(245, 87, 108, 0.25);
+		animation: slideDown 0.4s ease;
+		font-weight: 500;
 	}
 
-	@keyframes fadeIn {
+	@keyframes slideDown {
 		from {
 			opacity: 0;
-			transform: translateY(-20rpx);
+			transform: translateY(-30rpx);
 		}
 
 		to {
@@ -274,45 +276,56 @@
 	.topic-list {
 		display: flex;
 		flex-direction: column;
-		gap: 20rpx;
+		gap: 16rpx;
 	}
 
 	.topic-card {
 		background-color: #fff;
-		border-radius: 12rpx;
-		padding: 20rpx;
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+		border-radius: 20rpx;
+		padding: 24rpx;
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+		transition: all 0.3s ease;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.topic-card:active {
+		transform: translateY(-2rpx);
+		box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 	}
 
 	.topic-tag {
 		display: inline-block;
-		padding: 6rpx 12rpx;
+		padding: 8rpx 16rpx;
 		border-radius: 20rpx;
 		color: #fff;
-		font-size: 20rpx;
-		margin-bottom: 15rpx;
+		font-size: 22rpx;
+		margin-bottom: 16rpx;
+		font-weight: 500;
+		box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
 	}
 
 	.topic-title {
-		font-size: 30rpx;
-		color: #333;
-		font-weight: 500;
+		font-size: 32rpx;
+		color: #2c3e50;
+		font-weight: 600;
 		line-height: 1.4;
-		margin-bottom: 15rpx;
+		margin-bottom: 16rpx;
 	}
 
 	.topic-stats {
 		display: flex;
 		justify-content: space-between;
 		flex-wrap: wrap;
-		margin-bottom: 10rpx;
+		margin-bottom: 12rpx;
+		gap: 16rpx;
 	}
 
 	.stat-item {
 		font-size: 22rpx;
 		color: #666;
-		margin-right: 15rpx;
-		margin-bottom: 5rpx;
+		display: flex;
+		align-items: center;
 	}
 
 	.topic-time {
@@ -343,18 +356,25 @@
 	.video-list {
 		display: flex;
 		flex-direction: column;
-		gap: 15rpx;
+		gap: 16rpx;
 	}
 
 	.video-card {
 		background-color: #fff;
-		border-radius: 12rpx;
+		border-radius: 16rpx;
 		overflow: hidden;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+		transition: all 0.3s ease;
+	}
+
+	.video-card:active {
+		transform: translateY(-2rpx);
+		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 	}
 
 	.video-cover {
 		width: 100%;
-		height: 200rpx;
+		height: 220rpx;
 	}
 
 	.video-meta {

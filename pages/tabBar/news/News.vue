@@ -29,7 +29,7 @@
 			</view>
 		</view>
 
-		<scroll-view v-if="categories.length > 0" scroll-y class="news-scroll" ref="scrollRef" :refresher-enabled="true"
+		<scroll-view v-if="categories.length > 0" scroll-y class="news-scroll" ref="scrollRef" :scroll-top="scrollTop" :refresher-enabled="true"
 			:refresher-threshold="100" :refresher-refreshing="isRefreshing" @refresherrefresh="onRefresherRefresh"
 			@scrolltolower="onReachBottom">
 			<!-- 刷新更新提示 -->
@@ -99,7 +99,8 @@
 				loadingMore: false,
 				noMore: false,
 				// 防抖标识
-				isTabChanging: false
+				isTabChanging: false,
+				scrollTop: 0
 			};
 		},
 		computed: {
@@ -416,16 +417,13 @@
 				this.noMore = false;
 				this.getNewsList();
 
-				// 滚动到顶部
-				this.$nextTick(() => {
+				// 延迟滚动到顶部
+				setTimeout(() => {
 					const scrollView = this.$refs.scrollRef;
 					if (scrollView) {
-						scrollView.scrollTo({
-							scrollTop: 0,
-							duration: 300
-						});
+						this.scrollTop = 0;
 					}
-				});
+				}, 100);
 			},
 
 				/**
