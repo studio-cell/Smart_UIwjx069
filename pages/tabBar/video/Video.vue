@@ -719,22 +719,26 @@
 		display: flex;
 		justify-content: flex-end;
 		padding: 10rpx 15rpx 15rpx;
-		gap: 30rpx;
+		gap: 40rpx;
 	}
 
 	.action-item {
 		display: flex;
 		align-items: center;
 		gap: 8rpx;
+		min-width: 80rpx;
 	}
 
 	.action-icon {
 		font-size: 24rpx;
+		flex-shrink: 0;
 	}
 
 	.action-text {
 		font-size: 22rpx;
 		color: #666;
+		min-width: 60rpx;
+		text-align: left;
 	}
 
 	.empty-tip {
